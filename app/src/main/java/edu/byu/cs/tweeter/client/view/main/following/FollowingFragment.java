@@ -33,6 +33,9 @@ import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.User;
 
+//Move a background task (Executor Service) to a service class
+//getUserHandler should be distrubted accross three differente layers
+//Presentor calls the userservice to get data and calls view to display
 /**
  * Implements the "Following" tab.
  */
