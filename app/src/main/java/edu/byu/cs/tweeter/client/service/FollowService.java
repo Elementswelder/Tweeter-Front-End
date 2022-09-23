@@ -31,6 +31,7 @@ public class FollowService {
     }
 
 
+
     private class GetFollowingHandler extends Handler {
 
         private GetFollowingObserver observer;

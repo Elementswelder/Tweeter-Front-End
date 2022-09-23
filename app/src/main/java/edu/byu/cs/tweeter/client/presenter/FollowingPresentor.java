@@ -70,7 +70,7 @@ public class FollowingPresentor {
         @Override
         public void displayException(Exception ex) {
             isLoading = false;
-            view.displayMessage("Failed to get folloiwing because of exception: " + ex.getMessage());
+            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
             view.setLoadingFooter(false);
         }
     }
