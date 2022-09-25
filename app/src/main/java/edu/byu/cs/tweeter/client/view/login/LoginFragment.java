@@ -59,6 +59,9 @@ public class LoginFragment extends Fragment implements LoginPresenter.View {
         password = view.findViewById(R.id.loginPassword);
         errorView = view.findViewById(R.id.loginError);
 
+        alias.setText("@cooldude");
+        password.setText("securepassword");
+
         Button loginButton = view.findViewById(R.id.loginButton);
         loginButton.setOnClickListener(new View.OnClickListener() {
 

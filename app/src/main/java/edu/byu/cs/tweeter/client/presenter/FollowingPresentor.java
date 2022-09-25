@@ -23,8 +23,7 @@ public class FollowingPresentor {
         void displayMessage(String message);
         void setLoadingFooter(boolean value);
         void addFollowees(List<User> followees);
-
-
+        void setIntent(User user);
     }
 
     public FollowingPresentor(View view) {
@@ -45,6 +44,11 @@ public class FollowingPresentor {
         view.setLoadingFooter(true);
 
         followService.loadMoreItems(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, lastFollowee, new GetFollowingObserver());
+    }
+
+    public void loadMoreFollowers(String username){
+        followService.loadMoreFollowers(username, new GetFollowingObserver());
+        view.displayMessage("Getting user's profile...(test)");
     }
 
     private class GetFollowingObserver implements FollowService.GetFollowingObserver {
@@ -72,6 +76,11 @@ public class FollowingPresentor {
             isLoading = false;
             view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
             view.setLoadingFooter(false);
+        }
+
+        @Override
+        public void setIntent(User user) {
+            view.setIntent(user);
         }
     }
 }
