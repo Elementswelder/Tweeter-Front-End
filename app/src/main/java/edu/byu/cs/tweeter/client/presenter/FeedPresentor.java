@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -9,7 +10,6 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class FeedPresentor {
 
     private View view;
-
     private FollowService followService;
 
     private boolean hasMorePages;
@@ -22,11 +22,20 @@ public class FeedPresentor {
         void displayMessage(String string);
         void setIntent(User user);
         void setLoadingFooter(boolean bool);
+        void addFeeds(List<Status> statuses);
     }
 
     public void loadMoreFeedUser(String username) {
-        followService.loadMoreFeed(username, new FeedPresentor.GetFeedObserver());
-        view.displayMessage("Getting user's profile...Following()");
+        followService.loadMoreFeed(username, new GetFeedObserver());
+        view.displayMessage("Getting user's profile...Feed");
+    }
+
+    public void loadMoreFeed(User user) {
+        isLoading = true;
+        view.setLoadingFooter(true);
+
+        followService.loadMoreItemsFeed(Cache.getInstance().getCurrUserAuthToken(),
+                user, PAGE_SIZE, lastStatus, new GetFeedObserver());
     }
 
     public boolean isLoading() {
@@ -41,6 +50,7 @@ public class FeedPresentor {
         this.view = view;
         followService = new FollowService();
     }
+
 
     private class GetFeedObserver implements FollowService.GetFeedObserver {
 
@@ -63,6 +73,11 @@ public class FeedPresentor {
 
         @Override
         public void addFeedItems(List<Status> status, boolean hasMorePages) {
+            isLoading = false;
+            view.setLoadingFooter(false);
+            lastStatus = (status.size() > 0) ? status.get(status.size() - 1) : null;
+            view.addFeeds(status);
+            FeedPresentor.this.hasMorePages = hasMorePages;
 
         }
 
