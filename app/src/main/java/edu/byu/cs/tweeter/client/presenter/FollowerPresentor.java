@@ -1,13 +1,9 @@
 package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
-import edu.byu.cs.tweeter.client.view.main.followers.FollowersFragment;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowerPresentor {
@@ -24,6 +20,7 @@ public class FollowerPresentor {
         void displayMessage(String message);
         void setLoadingFooter(boolean value);
         void setIntent(User user);
+        void addFollowers(List<User> followers);
     }
 
     private class GetFollowerObserver implements FollowService.GetFollowerObserver{
@@ -50,8 +47,12 @@ public class FollowerPresentor {
         }
 
         @Override
-        public void addItems(List<User> followers) {
-
+        public void addItems(List<User> followers, boolean hasMorePages) {
+            isLoading = false;
+            view.setLoadingFooter(false);
+            lastFollower = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
+            view.addFollowers(followers);
+            FollowerPresentor.this.hasMorePages = hasMorePages;
         }
     }
 
@@ -69,13 +70,15 @@ public class FollowerPresentor {
         return isLoading;
     }
 
+    public boolean HasMorePages() {
+        return hasMorePages;
+    }
+
     public void getMoreFollowers(User user){
         isLoading = true;
         view.setLoadingFooter(true);
-        GetFollowersTask getFollowersTask = new GetFollowersTask(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastFollower, new FollowersFragment.FollowersRecyclerViewAdapter.GetFollowersHandler());
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(getFollowersTask);
+        followService.loadMoreItemsFollowers(Cache.getInstance().getCurrUserAuthToken(),
+                user, PAGE_SIZE, lastFollower, new GetFollowerObserver());
     }
 
 }

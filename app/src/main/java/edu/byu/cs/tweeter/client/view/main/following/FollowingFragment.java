@@ -168,6 +168,11 @@ public class FollowingFragment extends Fragment implements FollowingPresentor.Vi
 
         private final List<User> users = new ArrayList<>();
 
+
+        FollowingRecyclerViewAdapter() {
+
+        }
+
         /**
          * Adds new users to the list from which the RecyclerView retrieves the users it displays
          * and notifies the RecyclerView that items have been added.
