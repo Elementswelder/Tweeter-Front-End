@@ -48,7 +48,7 @@ public class FollowingPresentor {
 
     public void loadMoreFollowers(String username){
         followService.loadMoreFollowers(username, new GetFollowingObserver());
-        view.displayMessage("Getting user's profile...(test)");
+        view.displayMessage("Getting user's profile...Following()");
     }
 
     private class GetFollowingObserver implements FollowService.GetFollowingObserver {

@@ -31,13 +31,14 @@ import edu.byu.cs.client.R;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.presenter.FollowerPresentor;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
  * Implements the "Followers" tab.
  */
-public class FollowersFragment extends Fragment {
+public class FollowersFragment extends Fragment implements FollowerPresentor.View {
 
     private static final String LOG_TAG = "FollowersFragment";
     private static final String USER_KEY = "UserKey";
@@ -50,6 +51,8 @@ public class FollowersFragment extends Fragment {
     private User user;
 
     private FollowersRecyclerViewAdapter followersRecyclerViewAdapter;
+
+    private FollowerPresentor followerPresentor;
 
     /**
      * Creates an instance of the fragment and places the target user in an arguments
@@ -85,8 +88,31 @@ public class FollowersFragment extends Fragment {
         followersRecyclerView.setAdapter(followersRecyclerViewAdapter);
 
         followersRecyclerView.addOnScrollListener(new FollowRecyclerViewPaginationScrollListener(layoutManager));
+        followerPresentor = new FollowerPresentor(this);
 
         return view;
+    }
+
+    @Override
+    public void displayMessage(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void setLoadingFooter(boolean value) {
+        if (value){
+            followersRecyclerViewAdapter.addLoadingFooter();
+        } else {
+            followersRecyclerViewAdapter.removeLoadingFooter();
+        }
+    }
+
+    @Override
+    public void setIntent(User user) {
+        Intent intent = new Intent(getContext(), MainActivity.class);
+        intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
+        startActivity(intent);
+
     }
 
     /**
@@ -113,11 +139,7 @@ public class FollowersFragment extends Fragment {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
-                            userAlias.getText().toString(), new GetUserHandler());
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    executor.execute(getUserTask);
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                    followerPresentor.loadMoreFollowers(userAlias.getText().toString());
                 }
             });
         }

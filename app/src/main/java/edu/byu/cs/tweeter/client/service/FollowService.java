@@ -29,6 +29,16 @@ public class FollowService {
 
     }
 
+    public interface GetFollowerObserver{
+
+
+        void setIntent(User user);
+
+        void displayErrorMessage(String message);
+
+        void displayException(Exception ex);
+    }
+
     public void loadMoreItems(AuthToken currUserAuthToken, User user, int pageSize, User lastFollowee, GetFollowingObserver getFollowingObserver) {
         GetFollowingTask getFollowingTask = new GetFollowingTask(currUserAuthToken,
                 user, pageSize, lastFollowee, new GetFollowingHandler(getFollowingObserver));
@@ -42,6 +52,15 @@ public class FollowService {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getUserTask);
     }
+
+    public void loadMoreFollowersFollower(String username, GetFollowerObserver observer) {
+        GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
+                username, new GetUserHandlerFollower(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(getUserTask);
+    }
+
+
 
     private class GetFollowingHandler extends Handler {
 
@@ -93,6 +112,28 @@ public class FollowService {
             }
         }
 }
+    private class GetUserHandlerFollower extends Handler {
+
+        private GetFollowerObserver observer;
+
+        public GetUserHandlerFollower(GetFollowerObserver observer){
+            this.observer = observer;
+        }
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(GetUserTask.SUCCESS_KEY);
+            if (success) {
+                User user = (User) msg.getData().getSerializable(GetUserTask.USER_KEY);
+                observer.setIntent(user);
+            } else if (msg.getData().containsKey(GetUserTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(GetUserTask.MESSAGE_KEY);
+                observer.displayErrorMessage(message);;
+            } else if (msg.getData().containsKey(GetUserTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(GetUserTask.EXCEPTION_KEY);
+                observer.displayException(ex);
+            }
+        }
+    }
 
 
     }
