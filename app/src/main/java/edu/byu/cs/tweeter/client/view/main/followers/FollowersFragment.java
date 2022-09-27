@@ -52,7 +52,7 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
 
     private FollowersRecyclerViewAdapter followersRecyclerViewAdapter;
 
-    private FollowerPresentor followerPresentor;
+    private FollowerPresentor followerPresentor = new FollowerPresentor(this);
 
     /**
      * Creates an instance of the fragment and places the target user in an arguments
@@ -88,7 +88,7 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
         followersRecyclerView.setAdapter(followersRecyclerViewAdapter);
 
         followersRecyclerView.addOnScrollListener(new FollowRecyclerViewPaginationScrollListener(layoutManager));
-        followerPresentor = new FollowerPresentor(this);
+       // followerPresentor = new FollowerPresentor(this);
 
         return view;
     }
@@ -159,28 +159,6 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
 
         }
 
-        /**
-         * Message handler (i.e., observer) for GetUserTask.
-         */
-        private class GetUserHandler extends Handler {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                boolean success = msg.getData().getBoolean(GetUserTask.SUCCESS_KEY);
-                if (success) {
-                    User user = (User) msg.getData().getSerializable(GetUserTask.USER_KEY);
-
-                    Intent intent = new Intent(getContext(), MainActivity.class);
-                    intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
-                    startActivity(intent);
-                } else if (msg.getData().containsKey(GetUserTask.MESSAGE_KEY)) {
-                    String message = msg.getData().getString(GetUserTask.MESSAGE_KEY);
-                    Toast.makeText(getContext(), "Failed to get user's profile: " + message, Toast.LENGTH_LONG).show();
-                } else if (msg.getData().containsKey(GetUserTask.EXCEPTION_KEY)) {
-                    Exception ex = (Exception) msg.getData().getSerializable(GetUserTask.EXCEPTION_KEY);
-                    Toast.makeText(getContext(), "Failed to get user's profile because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            }
-        }
     }
 
     /**
@@ -303,14 +281,8 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
          * data.
          */
         void loadMoreItems() {
-            if (!isLoading) {   // This guard is important for avoiding a race condition in the scrolling code.
-                isLoading = true;
-                addLoadingFooter();
-
-                GetFollowersTask getFollowersTask = new GetFollowersTask(Cache.getInstance().getCurrUserAuthToken(),
-                        user, PAGE_SIZE, lastFollower, new GetFollowersHandler());
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                executor.execute(getFollowersTask);
+            if (!followerPresentor.isLoading()) {   // This guard is important for avoiding a race condition in the scrolling code.
+                followerPresentor.getMoreFollowers(user);
             }
         }
 

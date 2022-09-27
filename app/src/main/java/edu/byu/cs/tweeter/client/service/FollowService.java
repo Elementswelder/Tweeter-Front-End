@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
@@ -37,6 +38,8 @@ public class FollowService {
         void displayErrorMessage(String message);
 
         void displayException(Exception ex);
+
+        void addItems(List<User> followers);
     }
 
     public void loadMoreItems(AuthToken currUserAuthToken, User user, int pageSize, User lastFollowee, GetFollowingObserver getFollowingObserver) {
@@ -83,6 +86,34 @@ public class FollowService {
             } else if (msg.getData().containsKey(GetFollowingTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) msg.getData().getSerializable(GetFollowingTask.EXCEPTION_KEY);
                 observer.displayException(ex);
+            }
+        }
+    }
+
+    private class GetFollowersHandler extends Handler {
+        
+        private GetFollowerObserver observer;
+        
+        public GetFollowersHandler(GetFollowerObserver observer){
+            this.observer = observer;
+        }
+        
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(GetFollowersTask.SUCCESS_KEY);
+            if (success) {
+                List<User> followers = (List<User>) msg.getData().getSerializable(GetFollowersTask.FOLLOWERS_KEY);
+                boolean hasMorePages = msg.getData().getBoolean(GetFollowersTask.MORE_PAGES_KEY);
+
+                //lastFollower = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
+
+                observer.addItems(followers);
+            } else if (msg.getData().containsKey(GetFollowersTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(GetFollowersTask.MESSAGE_KEY);
+                Toast.makeText(getContext(), "Failed to get followers: " + message, Toast.LENGTH_LONG).show();
+            } else if (msg.getData().containsKey(GetFollowersTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(GetFollowersTask.EXCEPTION_KEY);
+                Toast.makeText(getContext(), "Failed to get followers because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
