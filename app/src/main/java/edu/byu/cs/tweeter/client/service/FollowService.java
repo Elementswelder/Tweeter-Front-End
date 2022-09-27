@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.service;
 
 import android.os.Handler;
 import android.os.Message;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -13,7 +14,9 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.view.main.feed.FeedFragment;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowService {
@@ -30,6 +33,14 @@ public class FollowService {
         void displayErrorMessage(String message);
         void displayException(Exception ex);
         void addItems(List<User> followers, boolean hasMorePages);
+    }
+
+    public interface GetFeedObserver{
+        void setIntent(User user);
+        void displayErrorMessage(String message);
+        void displayException(Exception ex);
+        void addFeedItems(List<Status> feeds, boolean hasMorePages);
+
     }
 
 
@@ -57,6 +68,13 @@ public class FollowService {
     public void loadMoreFollowersFollower(String username, GetFollowerObserver observer) {
         GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
                 username, new GetUserHandlerFollower(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(getUserTask);
+    }
+
+    public void loadMoreFeed(String username, GetFeedObserver observer){
+        GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(), username,
+                new GetUserHandlerFeed(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getUserTask);
     }
@@ -133,7 +151,7 @@ public class FollowService {
                 observer.setIntent(user);
             } else if (msg.getData().containsKey(GetUserTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetUserTask.MESSAGE_KEY);
-                observer.displayErrorMessage(message);;
+                observer.displayErrorMessage(message);
             } else if (msg.getData().containsKey(GetUserTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) msg.getData().getSerializable(GetUserTask.EXCEPTION_KEY);
                 observer.displayException(ex);
@@ -155,13 +173,40 @@ public class FollowService {
                 observer.setIntent(user);
             } else if (msg.getData().containsKey(GetUserTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetUserTask.MESSAGE_KEY);
-                observer.displayErrorMessage(message);;
+                observer.displayErrorMessage(message);
             } else if (msg.getData().containsKey(GetUserTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) msg.getData().getSerializable(GetUserTask.EXCEPTION_KEY);
                 observer.displayException(ex);
             }
         }
     }
+
+    private class GetUserHandlerFeed extends Handler {
+
+        private GetFeedObserver observer;
+
+        public GetUserHandlerFeed(GetFeedObserver observer){
+            this.observer = observer;
+        }
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(GetUserTask.SUCCESS_KEY);
+            if (success) {
+                User user = (User) msg.getData().getSerializable(GetUserTask.USER_KEY);
+                observer.setIntent(user);
+            } else if (msg.getData().containsKey(GetUserTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(GetUserTask.MESSAGE_KEY);
+                observer.displayErrorMessage(message);
+            } else if (msg.getData().containsKey(GetUserTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(GetUserTask.EXCEPTION_KEY);
+                observer.displayException(ex);
+            }
+        }
+    }
+
+
+
+
 
 
     }
