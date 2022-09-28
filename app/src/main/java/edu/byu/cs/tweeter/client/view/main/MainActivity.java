@@ -135,135 +135,17 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.logoutMenu) {
-            logOutToast = Toast.makeText(this, "Logging Out...", Toast.LENGTH_LONG);
-            logOutToast.show();
-
-            LogoutTask logoutTask = new LogoutTask(Cache.getInstance().getCurrUserAuthToken(), new LogoutHandler());
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(logoutTask);
-
+        if(presentor.attemptLogout(item)){
             return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
     }
 
-    public void logoutUser() {
-        //Revert to login screen.
-        Intent intent = new Intent(this, LoginActivity.class);
-        //Clear everything so that the main activity is recreated with the login page.
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        //Clear user data (cached data).
-        Cache.getInstance().clearCache();
-        startActivity(intent);
-    }
-
     @Override
     public void onStatusPosted(String post) {
-        postingToast = Toast.makeText(this, "Posting Status...", Toast.LENGTH_LONG);
-        postingToast.show();
+        presentor.createNewStatus(post);
 
-        try {
-            Status newStatus = new Status(post, Cache.getInstance().getCurrUser(), getFormattedDateTime(), parseURLs(post), parseMentions(post));
-            PostStatusTask statusTask = new PostStatusTask(Cache.getInstance().getCurrUserAuthToken(),
-                    newStatus, new PostStatusHandler());
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(statusTask);
-        } catch (Exception ex) {
-            Log.e(LOG_TAG, ex.getMessage(), ex);
-            Toast.makeText(this, "Failed to post the status because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public String getFormattedDateTime() throws ParseException {
-        SimpleDateFormat userFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        SimpleDateFormat statusFormat = new SimpleDateFormat("MMM d yyyy h:mm aaa");
-
-        return statusFormat.format(userFormat.parse(LocalDate.now().toString() + " " + LocalTime.now().toString().substring(0, 8)));
-    }
-
-    public List<String> parseURLs(String post) {
-        List<String> containedUrls = new ArrayList<>();
-        for (String word : post.split("\\s")) {
-            if (word.startsWith("http://") || word.startsWith("https://")) {
-
-                int index = findUrlEndIndex(word);
-
-                word = word.substring(0, index);
-
-                containedUrls.add(word);
-            }
-        }
-
-        return containedUrls;
-    }
-
-    public List<String> parseMentions(String post) {
-        List<String> containedMentions = new ArrayList<>();
-
-        for (String word : post.split("\\s")) {
-            if (word.startsWith("@")) {
-                word = word.replaceAll("[^a-zA-Z0-9]", "");
-                word = "@".concat(word);
-
-                containedMentions.add(word);
-            }
-        }
-
-        return containedMentions;
-    }
-
-    public int findUrlEndIndex(String word) {
-        if (word.contains(".com")) {
-            int index = word.indexOf(".com");
-            index += 4;
-            return index;
-        } else if (word.contains(".org")) {
-            int index = word.indexOf(".org");
-            index += 4;
-            return index;
-        } else if (word.contains(".edu")) {
-            int index = word.indexOf(".edu");
-            index += 4;
-            return index;
-        } else if (word.contains(".net")) {
-            int index = word.indexOf(".net");
-            index += 4;
-            return index;
-        } else if (word.contains(".mil")) {
-            int index = word.indexOf(".mil");
-            index += 4;
-            return index;
-        } else {
-            return word.length();
-        }
-    }
-
-    /*public void updateSelectedUserFollowingAndFollowers() {
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-
-        // Get count of most recently selected user's followers.
-        GetFollowersCountTask followersCountTask = new GetFollowersCountTask(Cache.getInstance().getCurrUserAuthToken(),
-                selectedUser, new GetFollowersCountHandler());
-        executor.execute(followersCountTask);
-
-        // Get count of most recently selected user's followees (who they are following)
-        GetFollowingCountTask followingCountTask = new GetFollowingCountTask(Cache.getInstance().getCurrUserAuthToken(),
-                selectedUser, new GetFollowingCountHandler());
-        executor.execute(followingCountTask);
-    } */
-
-    public void updateFollowButton(boolean removed) {
-        // If follow relationship was removed.
-        if (removed) {
-            followButton.setText(R.string.follow);
-            followButton.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-        } else {
-            followButton.setText(R.string.following);
-            followButton.setBackgroundColor(getResources().getColor(R.color.white));
-            followButton.setTextColor(getResources().getColor(R.color.lightGray));
-        }
     }
 
     @Override
@@ -295,42 +177,15 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
         followeeCount.setText(text);
     }
 
-    // LogoutHandler
-
-    private class LogoutHandler extends Handler {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LogoutTask.SUCCESS_KEY);
-            if (success) {
-                logOutToast.cancel();
-                logoutUser();
-            } else if (msg.getData().containsKey(LogoutTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LogoutTask.MESSAGE_KEY);
-                Toast.makeText(MainActivity.this, "Failed to logout: " + message, Toast.LENGTH_LONG).show();
-            } else if (msg.getData().containsKey(LogoutTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LogoutTask.EXCEPTION_KEY);
-                Toast.makeText(MainActivity.this, "Failed to logout because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    // PostStatusHandler
-
-    private class PostStatusHandler extends Handler {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(PostStatusTask.SUCCESS_KEY);
-            if (success) {
-                postingToast.cancel();
-                Toast.makeText(MainActivity.this, "Successfully Posted!", Toast.LENGTH_LONG).show();
-            } else if (msg.getData().containsKey(PostStatusTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(PostStatusTask.MESSAGE_KEY);
-                Toast.makeText(MainActivity.this, "Failed to post status: " + message, Toast.LENGTH_LONG).show();
-            } else if (msg.getData().containsKey(PostStatusTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(PostStatusTask.EXCEPTION_KEY);
-                Toast.makeText(MainActivity.this, "Failed to post status because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }
+    @Override
+    public void logout() {
+        //Revert to login screen.
+        Intent intent = new Intent(this, LoginActivity.class);
+        //Clear everything so that the main activity is recreated with the login page.
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //Clear user data (cached data).
+        Cache.getInstance().clearCache();
+        startActivity(intent);
     }
 
 }
