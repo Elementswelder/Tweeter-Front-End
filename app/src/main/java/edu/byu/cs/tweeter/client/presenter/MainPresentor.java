@@ -1,8 +1,10 @@
 package edu.byu.cs.tweeter.client.presenter;
 
 import android.view.MenuItem;
+import android.view.View;
 
 import edu.byu.cs.client.R;
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.client.service.StatusService;
 import edu.byu.cs.tweeter.client.service.UserService;
@@ -15,6 +17,7 @@ public class MainPresentor {
     private StatusService statusService;
     private UserService userService;
 
+
     public interface View {
 
         void displayMessage(String s);
@@ -22,6 +25,8 @@ public class MainPresentor {
         void setFollowingText(String text);
         void setFollowerText(String text);
         void logout();
+        void setFollowerButtonVisable();
+        void setFollowerButtonGone();
     }
 
     public MainPresentor(View view){
@@ -52,6 +57,21 @@ public class MainPresentor {
             return true;
         } else {
             return false;
+        }
+    }
+    public void checkUserNull(User selectedUser) {
+        if (selectedUser == null){
+            view.displayMessage("User NOT passed to activity");
+        }
+    }
+
+
+    public void checkFollowButton(User selectedUser) {
+        if (selectedUser.compareTo(Cache.getInstance().getCurrUser()) == 0) {
+            view.setFollowerButtonGone();
+        } else {
+            view.setFollowerButtonVisable();
+            setFollowingStatus(selectedUser);
         }
     }
 
@@ -96,8 +116,8 @@ public class MainPresentor {
         @Override
         public void setFollowingText(String text) {
             view.setFollowingText(text);
-
         }
+
     }
 
 }
