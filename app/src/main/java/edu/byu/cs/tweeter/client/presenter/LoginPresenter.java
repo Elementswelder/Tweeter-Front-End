@@ -10,10 +10,8 @@ public class LoginPresenter implements UserService.LoginObserver {
     public interface View {
         void displayInfoMessage(String message);
         void clearInfoMessage();
-
         void displayErrorMessage(String message);
         void clearErrorMessage();
-
         void navigateUser(User user);
 
     }

@@ -3,27 +3,28 @@ package edu.byu.cs.tweeter.client.presenter;
 import java.util.List;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.client.service.FollowService;
+import edu.byu.cs.tweeter.client.service.StatusService;
+import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class FollowerPresentor {
+public class StoryPresentor {
 
     private View view;
-    private FollowService followService;
+    private StatusService statusService;
     private static final int PAGE_SIZE = 10;
 
     private boolean isLoading = false;
-    private User lastFollower;
+    private Status lastStatus;
     private boolean hasMorePages;
 
     public interface View {
         void displayMessage(String message);
         void setLoadingFooter(boolean value);
         void setIntent(User user);
-        void addFollowers(List<User> followers);
+        void addStatus(List<Status> followers);
     }
 
-    private class GetFollowerObserver implements FollowService.GetFollowerObserver{
+    private class GetStoryObserver implements StatusService.GetStoryObserver{
 
         @Override
         public void setIntent(User user) {
@@ -47,23 +48,23 @@ public class FollowerPresentor {
         }
 
         @Override
-        public void addItems(List<User> followers, boolean hasMorePages) {
+        public void addStoryItems(List<Status> feeds, boolean hasMorePages) {
             isLoading = false;
             view.setLoadingFooter(false);
-            lastFollower = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
-            view.addFollowers(followers);
-            FollowerPresentor.this.hasMorePages = hasMorePages;
+            lastStatus = (feeds.size() > 0) ? feeds.get(feeds.size() - 1) : null;
+            view.addStatus(feeds);
+            StoryPresentor.this.hasMorePages = hasMorePages;
         }
     }
 
-    public FollowerPresentor(View view){
+    public StoryPresentor(View view){
         this.view = view;
-        followService = new FollowService();
+        statusService = new StatusService();
     }
 
     public void loadMoreFollowers(String username) {
-        followService.loadMoreFollowersFollower(username, new FollowerPresentor.GetFollowerObserver());
-        view.displayMessage("Getting user's profile...Followers");
+        statusService.loadMoreStory(username, new StoryPresentor.GetStoryObserver());
+        view.displayMessage("Getting user's profile...Story");
     }
 
     public boolean isLoading() {
@@ -74,11 +75,11 @@ public class FollowerPresentor {
         return hasMorePages;
     }
 
-    public void getMoreFollowers(User user){
+    public void getMoreStories(User user){
         isLoading = true;
         view.setLoadingFooter(true);
-        followService.loadMoreItemsFollowers(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastFollower, new GetFollowerObserver());
+        statusService.loadMoreStatus(Cache.getInstance().getCurrUserAuthToken(),
+                user, PAGE_SIZE, lastStatus, new GetStoryObserver());
     }
 
 }
