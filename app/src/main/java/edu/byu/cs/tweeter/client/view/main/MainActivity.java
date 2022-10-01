@@ -55,8 +55,6 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
 
     public static final String CURRENT_USER_KEY = "CurrentUser";
 
-    private Toast logOutToast;
-    private Toast postingToast;
     private User selectedUser;
     private TextView followeeCount;
     private TextView followerCount;
@@ -70,9 +68,7 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
         setContentView(R.layout.activity_main);
 
         selectedUser = (User) getIntent().getSerializableExtra(CURRENT_USER_KEY);
-        if (selectedUser == null) {
-            throw new RuntimeException("User not passed to activity");
-        }
+        presentor.checkUserNull(selectedUser);
 
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), selectedUser);
         ViewPager viewPager = findViewById(R.id.view_pager);
@@ -110,12 +106,8 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
 
         followButton = findViewById(R.id.followButton);
 
-        if (selectedUser.compareTo(Cache.getInstance().getCurrUser()) == 0) {
-            followButton.setVisibility(View.GONE);
-        } else {
-            followButton.setVisibility(View.VISIBLE);
-            presentor.setFollowingStatus(selectedUser);
-        }
+        presentor.checkFollowButton(selectedUser);
+
 
         followButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,6 +178,16 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
         //Clear user data (cached data).
         Cache.getInstance().clearCache();
         startActivity(intent);
+    }
+
+    @Override
+    public void setFollowerButtonVisable() {
+        followButton.setVisibility(android.view.View.VISIBLE);
+    }
+
+    @Override
+    public void setFollowerButtonGone() {
+        followButton.setVisibility(android.view.View.GONE);
     }
 
 }
