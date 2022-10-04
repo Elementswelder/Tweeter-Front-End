@@ -1,0 +1,37 @@
+package edu.byu.cs.tweeter.client.backgroundTask.Handlers;
+
+import android.os.Handler;
+import android.os.Message;
+
+import androidx.annotation.NonNull;
+
+import java.util.List;
+
+import edu.byu.cs.tweeter.client.backgroundTask.GetFeedTask;
+import edu.byu.cs.tweeter.client.service.FollowService;
+import edu.byu.cs.tweeter.model.domain.Status;
+
+public class GetFeedHandler extends Handler {
+
+    private FollowService.GetFeedObserver observer;
+
+    public GetFeedHandler(FollowService.GetFeedObserver observer) {
+        this.observer = observer;
+    }
+
+    @Override
+    public void handleMessage(@NonNull Message msg) {
+        boolean success = msg.getData().getBoolean(GetFeedTask.SUCCESS_KEY);
+        if (success) {
+            List<Status> statuses = (List<Status>) msg.getData().getSerializable(GetFeedTask.STATUSES_KEY);
+            boolean hasMorePages = msg.getData().getBoolean(GetFeedTask.MORE_PAGES_KEY);
+            observer.addFeedItems(statuses, hasMorePages);
+        } else if (msg.getData().containsKey(GetFeedTask.MESSAGE_KEY)) {
+            String message = msg.getData().getString(GetFeedTask.MESSAGE_KEY);
+            observer.displayErrorMessage("Failed to get feed: " + message);
+        } else if (msg.getData().containsKey(GetFeedTask.EXCEPTION_KEY)) {
+            Exception ex = (Exception) msg.getData().getSerializable(GetFeedTask.EXCEPTION_KEY);
+            observer.displayErrorMessage("Failed to get feed because of exception: " + ex.getMessage());
+        }
+    }
+}
