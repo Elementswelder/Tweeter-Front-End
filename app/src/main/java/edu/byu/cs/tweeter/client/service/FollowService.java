@@ -11,19 +11,19 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.FollowHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFeedHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowersCountHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowersHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowingCountHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowingHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetUserHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetUserHandlerFeed;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetUserHandlerFollower;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.IsFollowerHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.UnfollowHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.presenter.MainPresentor;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -49,14 +49,36 @@ public class FollowService {
         void displayErrorMessage(String message);
         void displayException(Exception ex);
         void addFeedItems(List<Status> feeds, boolean hasMorePages);
+    }
 
+    public interface GetUserObserver{
+        void displayErrorMessage(String message);
+        void displayException(Exception ex);
+        void setIntent(User user);
+    }
+
+    public interface GetUnfollowObserver{
+        void setFollowingButton(boolean isFollowed);
+        void displayErrorMessage(String message);
+        void displayException(Exception ex);
+    }
+
+    public interface GetFollowerUserObserver{
+        void setFollowingButton(boolean isFollowed);
+        void displayErrorMessage(String message);
+        void displayException(Exception ex);
+    }
+
+    public interface IsFollowerObserver{
+        void displayException(Exception ex);
+        void setFollowingButton(boolean isFollowed);
+        void displayErrorMessage(String message);
     }
 
     public interface MainObserver {
         void displayErrorMessage(String message);
         void displayMessage(String message);
         void displayException(Exception ex);
-        void setFollowingButton(boolean isFollowed);
         void setFollowerText(String text);
         void setFollowingText(String text);
 
@@ -85,51 +107,36 @@ public class FollowService {
         executor.execute(getFeedTask);
     }
 
-    public void loadMoreFollowers(String username, GetFollowingObserver observer) {
+    public void getUser(String username, GetUserObserver observer) {
         GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
                 username, new GetUserHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getUserTask);
     }
 
-    public void loadMoreFollowersFollower(String username, GetFollowerObserver observer) {
-        GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
-                username, new GetUserHandlerFollower(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(getUserTask);
-    }
 
-    public void loadMoreFeed(String username, GetFeedObserver observer){
-        GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(), username,
-                new GetUserHandlerFeed(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(getUserTask);
-    }
-
-    public void getFollowStatus(User user, MainObserver observer){
+    public void getFollowStatus(User user, IsFollowerObserver observer){
         IsFollowerTask isFollowerTask = new IsFollowerTask(Cache.getInstance().getCurrUserAuthToken(),
                 Cache.getInstance().getCurrUser(), user, new IsFollowerHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(isFollowerTask);
     }
 
-    public void setFollowButton(String buttonText, User selectedUser, MainObserver getMainObserver) {
-        if (buttonText.equals("Following")) {
-            UnfollowTask unfollowTask = new UnfollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                    selectedUser, new UnfollowHandler(this, getMainObserver, selectedUser));
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(unfollowTask);
+    public void followUser(User selectedUser, GetFollowerUserObserver observer, MainPresentor.GetMainObserver getMainObserver){
+        FollowTask followTask = new FollowTask(Cache.getInstance().getCurrUserAuthToken(),
+                selectedUser, new FollowHandler(this, observer, selectedUser, getMainObserver));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(followTask);
 
-            getMainObserver.displayMessage("Removing " + selectedUser.getName() + "...");
-        } else {
-            FollowTask followTask = new FollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                    selectedUser, new FollowHandler(this, getMainObserver, selectedUser));
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(followTask);
-
-            getMainObserver.displayMessage("Adding " + selectedUser.getName() + "...");
-        }
     }
+
+    public void unfollowUser(User selectedUser, GetUnfollowObserver observer, MainPresentor.GetMainObserver getMainObserver){
+        UnfollowTask unfollowTask = new UnfollowTask(Cache.getInstance().getCurrUserAuthToken(),
+                selectedUser, new UnfollowHandler(this, observer, selectedUser, getMainObserver));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(unfollowTask);
+    }
+
 
     public void updateSelectedUserFollowingAndFollowers(User selectedUser, MainObserver observer) {
         ExecutorService executor = Executors.newFixedThreadPool(2);

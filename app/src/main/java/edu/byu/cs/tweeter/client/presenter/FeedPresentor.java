@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
+import edu.byu.cs.tweeter.client.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -11,6 +12,7 @@ public class FeedPresentor {
 
     private View view;
     private FollowService followService;
+    private StatusService statusService;
 
     private boolean hasMorePages;
     private static final int PAGE_SIZE = 10;
@@ -26,7 +28,24 @@ public class FeedPresentor {
     }
 
     public void loadMoreFeedUser(String username) {
-        followService.loadMoreFeed(username, new GetFeedObserver());
+        followService.getUser(username, new FollowService.GetUserObserver() {
+            @Override
+            public void displayErrorMessage(String message) {
+                isLoading = false;
+                view.displayMessage("Failed to get following: " + message);
+                view.setLoadingFooter(false);
+            }
+            @Override
+            public void displayException(Exception ex) {
+                isLoading = false;
+                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                view.setLoadingFooter(false);
+            }
+            @Override
+            public void setIntent(User user) {
+                view.setIntent(user);
+            }
+        });
         view.displayMessage("Getting user's profile...Feed");
     }
 
@@ -49,6 +68,7 @@ public class FeedPresentor {
     public FeedPresentor(View view){
         this.view = view;
         followService = new FollowService();
+        statusService = new StatusService();
     }
 
 

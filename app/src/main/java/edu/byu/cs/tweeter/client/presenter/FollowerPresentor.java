@@ -62,7 +62,27 @@ public class FollowerPresentor {
     }
 
     public void loadMoreFollowers(String username) {
-        followService.loadMoreFollowersFollower(username, new FollowerPresentor.GetFollowerObserver());
+        followService.getUser(username, new FollowService.GetUserObserver() {
+            @Override
+            public void displayErrorMessage(String message) {
+                isLoading = false;
+                view.displayMessage("Failed to get following: " + message);
+                view.setLoadingFooter(false);
+
+            }
+
+            @Override
+            public void displayException(Exception ex) {
+                isLoading = false;
+                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                view.setLoadingFooter(false);
+            }
+
+            @Override
+            public void setIntent(User user) {
+                view.setIntent(user);
+            }
+        });
         view.displayMessage("Getting user's profile...Followers");
     }
 

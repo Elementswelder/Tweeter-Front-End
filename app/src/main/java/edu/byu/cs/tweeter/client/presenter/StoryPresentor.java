@@ -3,6 +3,7 @@ package edu.byu.cs.tweeter.client.presenter;
 import java.util.List;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.client.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -11,6 +12,7 @@ public class StoryPresentor {
 
     private View view;
     private StatusService statusService;
+    private FollowService followService;
     private static final int PAGE_SIZE = 10;
 
     private boolean isLoading = false;
@@ -60,10 +62,30 @@ public class StoryPresentor {
     public StoryPresentor(View view){
         this.view = view;
         statusService = new StatusService();
+        followService = new FollowService();
     }
 
     public void loadMoreFollowers(String username) {
-        statusService.loadMoreStory(username, new StoryPresentor.GetStoryObserver());
+        followService.getUser(username, new FollowService.GetUserObserver() {
+            @Override
+            public void setIntent(User user) {
+                view.setIntent(user);
+            }
+
+            @Override
+            public void displayErrorMessage(String message) {
+                isLoading = false;
+                view.displayMessage("Failed to get following: " + message);
+                view.setLoadingFooter(false);
+            }
+
+            @Override
+            public void displayException(Exception ex) {
+                isLoading = false;
+                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                view.setLoadingFooter(false);
+            }
+        });
         view.displayMessage("Getting user's profile...Story");
     }
 

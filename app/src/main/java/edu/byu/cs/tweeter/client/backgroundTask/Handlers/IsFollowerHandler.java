@@ -10,9 +10,9 @@ import edu.byu.cs.tweeter.client.service.FollowService;
 
 public class IsFollowerHandler extends Handler {
 
-    private FollowService.MainObserver observer;
+    private FollowService.IsFollowerObserver observer;
 
-    public IsFollowerHandler(FollowService.MainObserver observer) {
+    public IsFollowerHandler(FollowService.IsFollowerObserver observer) {
         this.observer = observer;
     }
 

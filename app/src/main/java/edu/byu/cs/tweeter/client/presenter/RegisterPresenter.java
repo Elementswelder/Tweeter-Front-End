@@ -9,7 +9,7 @@ import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter implements UserService.RegisterObserver {
+public class RegisterPresenter {
 
     String imageToString;
 
@@ -24,9 +24,11 @@ public class RegisterPresenter implements UserService.RegisterObserver {
     }
 
     private View view;
+    private final UserService userService;
 
-    public RegisterPresenter(RegisterPresenter.View view) {
+    public RegisterPresenter(View view) {
         this.view = view;
+        userService = new UserService();
     }
 
     public void initiateRegister(String firstName, String lastName, String username, String password) {
@@ -34,7 +36,20 @@ public class RegisterPresenter implements UserService.RegisterObserver {
         if (message == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Registering");
-            new UserService().register(firstName,lastName,username,password,this.imageToString, this);
+            userService.register(firstName,lastName,username,password,this.imageToString, new UserService.RegisterObserver() {
+                @Override
+                public void registerSucceeded(User user, AuthToken authToken) {
+                    view.displayInfoMessage("Welcome " + user.firstName);
+                    view.clearErrorMessage();
+                    view.navigateUser(user);
+                }
+
+                @Override
+                public void registerFailed(String message) {
+                    view.clearInfoMessage();
+                    view.displayErrorMessage(message);
+                }
+            });
         }
         else {
             view.clearInfoMessage();
@@ -79,24 +94,4 @@ public class RegisterPresenter implements UserService.RegisterObserver {
             view.displayErrorMessage("Error with the image");
         }
     }
-
-    @Override
-    public void registerSucceeded(User user, AuthToken authToken) {
-        view.displayInfoMessage("Welcome " + user.firstName);
-        view.clearErrorMessage();
-        view.navigateUser(user);
-
-    }
-
-    @Override
-    public void registerFailed(String message) {
-        view.clearInfoMessage();
-        view.displayErrorMessage(message);
-    }
-
-
-
-
-
-
 }
