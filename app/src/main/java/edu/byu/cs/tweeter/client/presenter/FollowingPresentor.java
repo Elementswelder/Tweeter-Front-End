@@ -43,7 +43,36 @@ public class FollowingPresentor {
         isLoading = true;
         view.setLoadingFooter(true);
 
-        followService.loadMoreItems(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, lastFollowee, new GetFollowingObserver());
+        followService.loadMoreItems(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, lastFollowee, new FollowService.GetFollowingObserver() {
+            @Override
+            public void addFollowees(List<User> followees, boolean hasMorePages) {
+                isLoading = false;
+                view.setLoadingFooter(false);
+                lastFollowee = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
+                view.addFollowees(followees);
+                FollowingPresentor.this.hasMorePages = hasMorePages;
+            }
+
+            @Override
+            public void handleFailure(String message) {
+                isLoading = false;
+                view.displayMessage("Failed to get following: " + message);
+                view.setLoadingFooter(false);
+
+            }
+
+            @Override
+            public void handleException(Exception ex) {
+                isLoading = false;
+                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                view.setLoadingFooter(false);
+            }
+
+            @Override
+            public void setIntent(User user) {
+                    view.setIntent(user);
+            }
+        });
     }
 
     public void loadMoreFollowers(String username){
@@ -68,38 +97,5 @@ public class FollowingPresentor {
             }
         });
         view.displayMessage("Getting user's profile...Following()");
-    }
-
-    private class GetFollowingObserver implements FollowService.GetFollowingObserver {
-
-        @Override
-        public void addFollowees(List<User> followees, boolean hasMorePages) {
-            isLoading = false;
-            view.setLoadingFooter(false);
-            lastFollowee = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
-            view.addFollowees(followees);
-            FollowingPresentor.this.hasMorePages = hasMorePages;
-        }
-
-        @Override
-        public void displayErrorMessage(String message) {
-            isLoading = false;
-            view.displayMessage("Failed to get following: " + message);
-            view.setLoadingFooter(false);
-
-
-        }
-
-        @Override
-        public void displayException(Exception ex) {
-            isLoading = false;
-            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
-            view.setLoadingFooter(false);
-        }
-
-        @Override
-        public void setIntent(User user) {
-            view.setIntent(user);
-        }
     }
 }

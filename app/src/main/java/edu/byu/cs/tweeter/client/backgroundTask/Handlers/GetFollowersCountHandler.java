@@ -10,9 +10,9 @@ import edu.byu.cs.tweeter.client.service.FollowService;
 
 public class GetFollowersCountHandler extends Handler {
 
-    private FollowService.MainObserver observer;
+    private FollowService.GetCountFollowObserver observer;
 
-    public GetFollowersCountHandler(FollowService.MainObserver observer) {
+    public GetFollowersCountHandler(FollowService.GetCountFollowObserver observer) {
         this.observer = observer;
     }
 

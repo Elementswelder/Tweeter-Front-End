@@ -10,24 +10,17 @@ import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class UnfollowHandler extends Handler {
-    private final FollowService followService;
     private FollowService.GetUnfollowObserver observer;
-    private User user;
-    private FollowService.MainObserver observerMain;
 
-    public UnfollowHandler(FollowService followService, FollowService.GetUnfollowObserver observer, User user, FollowService.MainObserver observerMain) {
-        this.followService = followService;
+    public UnfollowHandler(FollowService.GetUnfollowObserver observer) {
         this.observer = observer;
-        this.user = user;
-        this.observerMain = observerMain;
     }
 
     @Override
     public void handleMessage(@NonNull Message msg) {
         boolean success = msg.getData().getBoolean(UnfollowTask.SUCCESS_KEY);
         if (success) {
-            followService.updateSelectedUserFollowingAndFollowers(user, observerMain);
-            observer.setFollowingButton(false);
+            observer.handleSuccess();
         } else if (msg.getData().containsKey(UnfollowTask.MESSAGE_KEY)) {
             String message = msg.getData().getString(UnfollowTask.MESSAGE_KEY);
             observer.displayErrorMessage("Failed to unfollow: " + message);

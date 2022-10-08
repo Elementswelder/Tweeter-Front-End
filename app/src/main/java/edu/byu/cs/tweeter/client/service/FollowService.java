@@ -22,6 +22,8 @@ import edu.byu.cs.tweeter.client.backgroundTask.Handlers.IsFollowerHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.UnfollowHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.ServiceObserver;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.presenter.MainPresentor;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -30,10 +32,10 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowService {
 
-    public interface GetFollowingObserver  {
+    public interface GetFollowingObserver extends SimpleNotifyObserver {
         void addFollowees(List<User> followers, boolean hasMorePages);
-        void displayErrorMessage(String message);
-        void displayException(Exception ex);
+        void handleFailure(String message);
+        void handleException(Exception ex);
         void setIntent(User user);
     }
 
@@ -61,12 +63,14 @@ public class FollowService {
         void setFollowingButton(boolean isFollowed);
         void displayErrorMessage(String message);
         void displayException(Exception ex);
+        void handleSuccess();
     }
 
     public interface GetFollowerUserObserver{
         void setFollowingButton(boolean isFollowed);
         void displayErrorMessage(String message);
         void displayException(Exception ex);
+        void handleSuccess();
     }
 
     public interface IsFollowerObserver{
@@ -75,13 +79,20 @@ public class FollowService {
         void displayErrorMessage(String message);
     }
 
+    public interface GetCountFollowObserver{
+        void setFollowerText(String text);
+        void setFollowingText(String text);
+        void displayErrorMessage(String message);
+        void displayException(Exception ex);
+    }
+
+
     public interface MainObserver {
         void displayErrorMessage(String message);
         void displayMessage(String message);
         void displayException(Exception ex);
         void setFollowerText(String text);
         void setFollowingText(String text);
-
     }
 
 
@@ -122,23 +133,22 @@ public class FollowService {
         executor.execute(isFollowerTask);
     }
 
-    public void followUser(User selectedUser, GetFollowerUserObserver observer, MainPresentor.GetMainObserver getMainObserver){
+    public void followUser(User selectedUser, GetFollowerUserObserver observer){
         FollowTask followTask = new FollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                selectedUser, new FollowHandler(this, observer, selectedUser, getMainObserver));
+                selectedUser, new FollowHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(followTask);
 
     }
 
-    public void unfollowUser(User selectedUser, GetUnfollowObserver observer, MainPresentor.GetMainObserver getMainObserver){
+    public void unfollowUser(User selectedUser, GetUnfollowObserver observer){
         UnfollowTask unfollowTask = new UnfollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                selectedUser, new UnfollowHandler(this, observer, selectedUser, getMainObserver));
+                selectedUser, new UnfollowHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(unfollowTask);
     }
 
-
-    public void updateSelectedUserFollowingAndFollowers(User selectedUser, MainObserver observer) {
+    public void updateSelectedUserFollowingAndFollowers(User selectedUser, GetCountFollowObserver observer) {
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         // Get count of most recently selected user's followers.

@@ -79,7 +79,33 @@ public class MainPresentor {
                 public void displayException(Exception ex) {
                     view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
                 }
-            },  new MainPresentor.GetMainObserver());
+
+                @Override
+                public void handleSuccess() {
+                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowService.GetCountFollowObserver() {
+                        @Override
+                        public void setFollowerText(String text) {
+                            view.setFollowingText(text);
+                        }
+
+                        @Override
+                        public void setFollowingText(String text) {
+                            view.setFollowerText(text);
+                        }
+
+                        @Override
+                        public void displayErrorMessage(String message) {
+                            view.displayMessage("Failed to get following: " + message);
+                        }
+
+                        @Override
+                        public void displayException(Exception ex) {
+                            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                        }
+                    });
+                    setFollowingButton(false);
+                }
+            });
 
             view.displayMessage("Removing " + selectedUser.getName() + "...");
 
@@ -99,13 +125,59 @@ public class MainPresentor {
                 public void displayException(Exception ex) {
                     view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
                 }
-            },  new MainPresentor.GetMainObserver());
+
+                @Override
+                public void handleSuccess() {
+                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowService.GetCountFollowObserver() {
+                        @Override
+                        public void setFollowerText(String text) {
+                            view.setFollowingText(text);
+                        }
+
+                        @Override
+                        public void setFollowingText(String text) {
+                            view.setFollowerText(text);
+                        }
+
+                        @Override
+                        public void displayErrorMessage(String message) {
+                            view.displayMessage("Failed to get following: " + message);
+                        }
+
+                        @Override
+                        public void displayException(Exception ex) {
+                            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                        }
+                    });
+                    setFollowingButton(true);
+                }
+            });
             view.displayMessage("Adding " + selectedUser.getName() + "...");
         }
     }
 
     public void updateSelectedUserFollowingAndFollowers(User user) {
-        followService.updateSelectedUserFollowingAndFollowers(user, new MainPresentor.GetMainObserver());
+        followService.updateSelectedUserFollowingAndFollowers(user, new FollowService.GetCountFollowObserver() {
+            @Override
+            public void setFollowerText(String text) {
+                view.setFollowingText(text);
+            }
+
+            @Override
+            public void setFollowingText(String text) {
+                view.setFollowerText(text);
+            }
+
+            @Override
+            public void displayErrorMessage(String message) {
+                view.displayMessage("Failed to get following: " + message);
+            }
+
+            @Override
+            public void displayException(Exception ex) {
+                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+            }
+        });
     }
     public void createNewStatus(String post) {
         statusService.createNewPost(post, new MainPresentor.GetMainObserver());
