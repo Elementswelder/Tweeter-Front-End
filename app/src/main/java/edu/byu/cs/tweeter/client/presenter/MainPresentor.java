@@ -7,10 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import edu.byu.cs.client.R;
-import edu.byu.cs.tweeter.client.backgroundTask.FollowTask;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.FollowHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.UnfollowHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
+
+import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.client.service.StatusService;
@@ -64,24 +62,25 @@ public class MainPresentor {
     }
     public void setFollowButton(String buttonText, User selectedUser) {
         if (buttonText.equals("Following")) {
-            followService.unfollowUser(selectedUser, new FollowService.GetUnfollowObserver() {
-                @Override
+            followService.unfollowUser(selectedUser, new SimpleNotifyObserver() {
+               /* @Override
                 public void setFollowingButton(boolean isFollowed) {
                     view.setFollowerButton(isFollowed);
-                }
+                } */
 
                 @Override
-                public void displayErrorMessage(String message) {
+                public void handleFailure(String message) {
                     view.displayMessage("Failed to get following: " + message);
                 }
 
                 @Override
-                public void displayException(Exception ex) {
-                    view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                public void handleException(Exception exception) {
+                    view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
                 }
 
                 @Override
                 public void handleSuccess() {
+                    view.setFollowerButton(false);
                     followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowService.GetCountFollowObserver() {
                         @Override
                         public void setFollowerText(String text) {
@@ -110,19 +109,14 @@ public class MainPresentor {
             view.displayMessage("Removing " + selectedUser.getName() + "...");
 
         } else {
-            followService.followUser(selectedUser, new FollowService.GetFollowerUserObserver() {
+            followService.followUser(selectedUser, new SimpleNotifyObserver() {
                 @Override
-                public void setFollowingButton(boolean isFollowed) {
-                    view.setFollowerButton(isFollowed);
-                }
-
-                @Override
-                public void displayErrorMessage(String message) {
+                public void handleFailure(String message) {
                     view.displayMessage("Failed to get following: " + message);
                 }
 
                 @Override
-                public void displayException(Exception ex) {
+                public void handleException(Exception ex) {
                     view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
                 }
 
@@ -149,11 +143,15 @@ public class MainPresentor {
                             view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
                         }
                     });
-                    setFollowingButton(true);
                 }
             });
+            setFollowingButton(true);
             view.displayMessage("Adding " + selectedUser.getName() + "...");
         }
+    }
+
+    private void setFollowingButton(boolean isFollowed) {
+        view.setFollowerButton(isFollowed);
     }
 
     public void updateSelectedUserFollowingAndFollowers(User user) {
@@ -179,18 +177,36 @@ public class MainPresentor {
             }
         });
     }
+
     public void createNewStatus(String post) {
         statusService.createNewPost(post, new MainPresentor.GetMainObserver());
     }
+
     public boolean attemptLogout(MenuItem item) {
         if (item.getItemId() == R.id.logoutMenu) {
             view.displayMessage("Logging Out...");
-            userService.logout(new MainPresentor.GetMainObserver());
+            userService.logout(new SimpleNotifyObserver() {
+                @Override
+                public void handleFailure(String message) {
+                    view.displayMessage(message);
+                }
+
+                @Override
+                public void handleException(Exception exception) {
+                    view.displayMessage(exception.toString());
+                }
+
+                @Override
+                public void handleSuccess() {
+                    view.logout();
+                }
+            });
             return true;
         } else {
             return false;
         }
     }
+
     public void checkUserNull(User selectedUser) {
         if (selectedUser == null){
             view.displayMessage("User NOT passed to activity");
@@ -215,7 +231,6 @@ public class MainPresentor {
         @Override
         public void displayErrorMessage(String message) {
             view.displayMessage("Failed to get following: " + message);
-
         }
 
         @Override
@@ -223,28 +238,12 @@ public class MainPresentor {
             view.displayMessage(message);
         }
 
-        @Override
-        public void logoutUser() {
-            view.logout();
-
-        }
 
         @Override
         public void displayException(Exception ex) {
             view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
 
         }
-
-        @Override
-        public void setFollowerText(String text) {
-            view.setFollowerText(text);
-        }
-
-        @Override
-        public void setFollowingText(String text) {
-            view.setFollowingText(text);
-        }
-
     }
 
 }

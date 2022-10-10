@@ -11,7 +11,6 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.FollowHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFeedHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowersCountHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowersHandler;
@@ -19,24 +18,21 @@ import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowingCountHandle
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowingHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetUserHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.IsFollowerHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.UnfollowHandler;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
-import edu.byu.cs.tweeter.client.backgroundTask.observer.ServiceObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.client.presenter.MainPresentor;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowService {
 
-    public interface GetFollowingObserver extends SimpleNotifyObserver {
-        void addFollowees(List<User> followers, boolean hasMorePages);
+    public interface GetFollowingObserver {
+        void handleSuccess(List<User> followers, boolean hasMorePages);
         void handleFailure(String message);
         void handleException(Exception ex);
-        void setIntent(User user);
     }
 
     public interface GetFollowerObserver {
@@ -59,20 +55,6 @@ public class FollowService {
         void setIntent(User user);
     }
 
-    public interface GetUnfollowObserver{
-        void setFollowingButton(boolean isFollowed);
-        void displayErrorMessage(String message);
-        void displayException(Exception ex);
-        void handleSuccess();
-    }
-
-    public interface GetFollowerUserObserver{
-        void setFollowingButton(boolean isFollowed);
-        void displayErrorMessage(String message);
-        void displayException(Exception ex);
-        void handleSuccess();
-    }
-
     public interface IsFollowerObserver{
         void displayException(Exception ex);
         void setFollowingButton(boolean isFollowed);
@@ -91,8 +73,6 @@ public class FollowService {
         void displayErrorMessage(String message);
         void displayMessage(String message);
         void displayException(Exception ex);
-        void setFollowerText(String text);
-        void setFollowingText(String text);
     }
 
 
@@ -133,17 +113,17 @@ public class FollowService {
         executor.execute(isFollowerTask);
     }
 
-    public void followUser(User selectedUser, GetFollowerUserObserver observer){
+    public void followUser(User selectedUser, SimpleNotifyObserver observer){
         FollowTask followTask = new FollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                selectedUser, new FollowHandler(observer));
+                selectedUser, new SimpleNotificationHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(followTask);
 
     }
 
-    public void unfollowUser(User selectedUser, GetUnfollowObserver observer){
+    public void unfollowUser(User selectedUser, SimpleNotifyObserver observer){
         UnfollowTask unfollowTask = new UnfollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                selectedUser, new UnfollowHandler(observer));
+                selectedUser, new SimpleNotificationHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(unfollowTask);
     }

@@ -4,11 +4,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.LoginHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.LogoutHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.RegisterHandler;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.LoginTask;
 import edu.byu.cs.tweeter.client.backgroundTask.LogoutTask;
 import edu.byu.cs.tweeter.client.backgroundTask.RegisterTask;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -18,7 +19,6 @@ public class UserService {
     public interface LoginObserver {
         void loginSucceeded(User user, AuthToken authToken);
         void loginFailed(String message);
-
     }
 
     public interface RegisterObserver {
@@ -26,10 +26,11 @@ public class UserService {
         void registerFailed(String message);
     }
 
+    public interface LogoutObserver extends SimpleNotifyObserver { }
+
     public interface GetMainObserver {
         void displayErrorMessage(String message);
         void displayMessage(String message);
-        void logoutUser();
     }
 
 
@@ -46,16 +47,11 @@ public class UserService {
                 password, image, new RegisterHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(registerTask);
-
     }
 
-    public void logout(GetMainObserver observer){
-        observer.displayMessage("Logging Out...");
-        LogoutTask logoutTask = new LogoutTask(Cache.getInstance().getCurrUserAuthToken(), new LogoutHandler(observer));
+    public void logout(SimpleNotifyObserver observer){
+        LogoutTask logoutTask = new LogoutTask(Cache.getInstance().getCurrUserAuthToken(), new SimpleNotificationHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(logoutTask);
     }
-
-    // LogoutHandler
-
 }

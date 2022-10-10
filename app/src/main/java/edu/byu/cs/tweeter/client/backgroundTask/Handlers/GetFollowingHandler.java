@@ -25,7 +25,7 @@ public class GetFollowingHandler extends Handler {
         if (success) {
             List<User> followees = (List<User>) msg.getData().getSerializable(GetFollowingTask.ITEMS_KEY);
             boolean hasMorePages = msg.getData().getBoolean(GetFollowingTask.MORE_PAGES_KEY);
-            observer.addFollowees(followees, hasMorePages);
+            observer.handleSuccess(followees, hasMorePages);
         } else if (msg.getData().containsKey(GetFollowingTask.MESSAGE_KEY)) {
             String message = msg.getData().getString(GetFollowingTask.MESSAGE_KEY);
             observer.handleFailure(message);

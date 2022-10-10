@@ -45,7 +45,7 @@ public class FollowingPresentor {
 
         followService.loadMoreItems(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, lastFollowee, new FollowService.GetFollowingObserver() {
             @Override
-            public void addFollowees(List<User> followees, boolean hasMorePages) {
+            public void handleSuccess(List<User> followees, boolean hasMorePages) {
                 isLoading = false;
                 view.setLoadingFooter(false);
                 lastFollowee = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
@@ -66,11 +66,6 @@ public class FollowingPresentor {
                 isLoading = false;
                 view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
                 view.setLoadingFooter(false);
-            }
-
-            @Override
-            public void setIntent(User user) {
-                    view.setIntent(user);
             }
         });
     }
