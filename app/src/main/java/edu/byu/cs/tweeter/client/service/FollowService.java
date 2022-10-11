@@ -13,13 +13,14 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.FollowCountHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.FollowerHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetUserHandler;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetSingleUserHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.PagedNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.FollowCountObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.FollowerObserver;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.GetSingleUserObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
@@ -90,9 +91,9 @@ public class FollowService {
         executor.execute(getFeedTask);
     }
 
-    public void getUser(String username, GetUserObserver observer) {
+    public void getUser(String username, GetSingleUserObserver observer) {
         GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
-                username, new GetUserHandler(observer));
+                username, new GetSingleUserHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getUserTask);
     }

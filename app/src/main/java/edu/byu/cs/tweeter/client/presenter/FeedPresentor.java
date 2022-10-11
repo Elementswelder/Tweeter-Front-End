@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.GetSingleUserObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
@@ -29,21 +30,23 @@ public class FeedPresentor {
     }
 
     public void loadMoreFeedUser(String username) {
-        followService.getUser(username, new FollowService.GetUserObserver() {
+        followService.getUser(username, new GetSingleUserObserver() {
             @Override
-            public void displayErrorMessage(String message) {
+            public void handleFailure(String message) {
                 isLoading = false;
                 view.displayMessage("Failed to get following: " + message);
                 view.setLoadingFooter(false);
             }
+
             @Override
-            public void displayException(Exception ex) {
+            public void handleException(Exception exception) {
                 isLoading = false;
-                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
                 view.setLoadingFooter(false);
             }
+
             @Override
-            public void setIntent(User user) {
+            public void handleSuccess(User user) {
                 view.setIntent(user);
             }
         });
