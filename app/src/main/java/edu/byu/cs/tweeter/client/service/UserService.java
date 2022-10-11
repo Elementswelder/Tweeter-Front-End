@@ -26,13 +26,6 @@ public class UserService {
         void registerFailed(String message);
     }
 
-    public interface LogoutObserver extends SimpleNotifyObserver { }
-
-    public interface GetMainObserver {
-        void displayErrorMessage(String message);
-        void displayMessage(String message);
-    }
-
 
     //It returns void because it's calling the presentor
     public void login(String username, String password, LoginObserver observer){

@@ -3,6 +3,7 @@ package edu.byu.cs.tweeter.client.presenter;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.text.ParseException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -179,7 +180,22 @@ public class MainPresentor {
     }
 
     public void createNewStatus(String post) {
-        statusService.createNewPost(post, new MainPresentor.GetMainObserver());
+        statusService.createNewPost(post, new SimpleNotifyObserver() {
+            @Override
+            public void handleSuccess() {
+                view.displayMessage("Successfully Posted!");
+            }
+
+            @Override
+            public void handleFailure(String message) {
+                view.displayMessage(message);
+            }
+
+            @Override
+            public void handleException(Exception exception) {
+                view.displayMessage(exception.toString());
+            }
+        });
     }
 
     public boolean attemptLogout(MenuItem item) {
@@ -222,28 +238,4 @@ public class MainPresentor {
             setFollowingStatus(selectedUser);
         }
     }
-
-
-
-
-    public class GetMainObserver implements FollowService.MainObserver, StatusService.GetMainObserver, UserService.GetMainObserver{
-
-        @Override
-        public void displayErrorMessage(String message) {
-            view.displayMessage("Failed to get following: " + message);
-        }
-
-        @Override
-        public void displayMessage(String message) {
-            view.displayMessage(message);
-        }
-
-
-        @Override
-        public void displayException(Exception ex) {
-            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
-
-        }
-    }
-
 }

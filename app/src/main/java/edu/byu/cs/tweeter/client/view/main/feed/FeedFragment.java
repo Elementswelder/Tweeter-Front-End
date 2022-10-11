@@ -48,7 +48,7 @@ public class FeedFragment extends Fragment implements FeedPresentor.View {
 
 
     private User user;
-    private FeedRecyclerViewAdapter feedRecyclerViewAdapter = new FeedRecyclerViewAdapter();
+    private final FeedRecyclerViewAdapter feedRecyclerViewAdapter = new FeedRecyclerViewAdapter();
     private FeedPresentor presentor = new FeedPresentor(this);
 
     /**

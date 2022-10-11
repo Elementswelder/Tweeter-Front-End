@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -98,7 +99,30 @@ public class FollowerPresentor {
         isLoading = true;
         view.setLoadingFooter(true);
         followService.loadMoreItemsFollowers(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastFollower, new GetFollowerObserver());
+                user, PAGE_SIZE, lastFollower, new PagedObserver<User>() {
+                    @Override
+                    public void handleSuccess(List<User> items, boolean hasMorePages) {
+                        isLoading = false;
+                        view.setLoadingFooter(false);
+                        lastFollower = (items.size() > 0) ? items.get(items.size() - 1) : null;
+                        view.addFollowers(items);
+                        FollowerPresentor.this.hasMorePages = hasMorePages;
+                    }
+
+                    @Override
+                    public void handleFailure(String message) {
+                        isLoading = false;
+                        view.displayMessage("Failed to get following: " + message);
+                        view.setLoadingFooter(false);
+                    }
+
+                    @Override
+                    public void handleException(Exception exception) {
+                        isLoading = false;
+                        view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+                        view.setLoadingFooter(false);
+                    }
+                });
     }
 
 }

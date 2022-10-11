@@ -1,6 +1,5 @@
 package edu.byu.cs.tweeter.client.service;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -11,8 +10,9 @@ import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.backgroundTask.GetStoryTask;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetStoryHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.PostStatusHandler;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.PostStatusTask;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -21,12 +21,11 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class StatusService {
 
 
-    public interface GetStoryObserver{
+    public interface GetStoryObserver {
         void setIntent(User user);
         void displayErrorMessage(String message);
         void displayException(Exception ex);
         void addStoryItems(List<Status> feeds, boolean hasMorePages);
-
     }
 
     public interface GetFeedObserver {
@@ -36,12 +35,6 @@ public class StatusService {
         void addFeedItems(List<Status> feeds, boolean hasMorePages);
     }
 
-    public interface GetMainObserver {
-        void displayErrorMessage(String message);
-        void displayMessage(String message);
-
-    }
-
     public void loadMoreStatus(AuthToken currUserAuthToken, User user, int pageSize, Status lastStatus, GetStoryObserver getStoryObserver){
         GetStoryTask getStoryTask = new GetStoryTask(currUserAuthToken,
                 user, pageSize, lastStatus, new GetStoryHandler(getStoryObserver));
@@ -49,24 +42,25 @@ public class StatusService {
         executor.execute(getStoryTask);
     }
 
-    public void createNewPost(String post,  StatusService.GetMainObserver observer) {
-        observer.displayMessage("Posting Status...");
-        try {
-            Status newStatus = new Status(post, Cache.getInstance().getCurrUser(), getFormattedDateTime(), parseURLs(post), parseMentions(post));
-            PostStatusTask statusTask = new PostStatusTask(Cache.getInstance().getCurrUserAuthToken(),
-                    newStatus, new PostStatusHandler(observer));
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(statusTask);
-        } catch (Exception ex) {
-            observer.displayErrorMessage(ex.getMessage());
-        }
+    public void createNewPost(String post, SimpleNotifyObserver observer) {
+        Status newStatus = new Status(post, Cache.getInstance().getCurrUser(), getFormattedDateTime(), parseURLs(post), parseMentions(post));
+        PostStatusTask statusTask = new PostStatusTask(Cache.getInstance().getCurrUserAuthToken(),
+                newStatus, new SimpleNotificationHandler(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(statusTask);
     }
 
-    public String getFormattedDateTime() throws ParseException {
-        SimpleDateFormat userFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        SimpleDateFormat statusFormat = new SimpleDateFormat("MMM d yyyy h:mm aaa");
+    public String getFormattedDateTime() {
+        try {
+            SimpleDateFormat userFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat statusFormat = new SimpleDateFormat("MMM d yyyy h:mm aaa");
 
-        return statusFormat.format(userFormat.parse(LocalDate.now().toString() + " " + LocalTime.now().toString().substring(0, 8)));
+            return statusFormat.format(userFormat.parse(LocalDate.now().toString() + " " + LocalTime.now().toString().substring(0, 8)));
+        }
+        catch (Exception ex) {
+            System.out.println(ex);
+        }
+        return null;
     }
 
     public List<String> parseURLs(String post) {

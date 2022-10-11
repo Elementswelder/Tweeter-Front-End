@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.client.backgroundTask.observer;
 
-public interface PagedObserver extends ServiceObserver {
+import java.util.List;
 
+public interface PagedObserver<T> extends ServiceObserver {
+    void handleSuccess(List<T> items, boolean hasMorePages);
 }

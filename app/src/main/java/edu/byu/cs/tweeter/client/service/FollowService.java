@@ -11,16 +11,16 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFeedHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowersCountHandler;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowersHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowingCountHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetFollowingHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetUserHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.IsFollowerHandler;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.PagedNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -69,14 +69,6 @@ public class FollowService {
     }
 
 
-    public interface MainObserver {
-        void displayErrorMessage(String message);
-        void displayMessage(String message);
-        void displayException(Exception ex);
-    }
-
-
-
     public void loadMoreItems(AuthToken currUserAuthToken, User user, int pageSize, User lastFollowee, GetFollowingObserver getFollowingObserver) {
         GetFollowingTask getFollowingTask = new GetFollowingTask(currUserAuthToken,
                 user, pageSize, lastFollowee, new GetFollowingHandler(getFollowingObserver));
@@ -84,16 +76,16 @@ public class FollowService {
         executor.execute(getFollowingTask);
     }
 
-    public void loadMoreItemsFollowers(AuthToken currUserAuthToken, User user, int pageSize, User lastFollowee, GetFollowerObserver getFollowerObserver) {
+    public void loadMoreItemsFollowers(AuthToken currUserAuthToken, User user, int pageSize, User lastFollowee, PagedObserver<User> observer) {
         GetFollowersTask getFollowersTask = new GetFollowersTask(currUserAuthToken,
-                user, pageSize, lastFollowee, new GetFollowersHandler(getFollowerObserver));
+                user, pageSize, lastFollowee, new PagedNotificationHandler<>(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getFollowersTask);
     }
 
-    public void loadMoreItemsFeed(AuthToken currUserAuthToken, User user, int pageSize, Status lastStatus, GetFeedObserver getFeedObserver){
+    public void loadMoreItemsFeed(AuthToken currUserAuthToken, User user, int pageSize, Status lastStatus, PagedObserver<Status> observer){
         GetFeedTask getFeedTask = new GetFeedTask(currUserAuthToken,
-                user, pageSize, lastStatus, new GetFeedHandler(getFeedObserver));
+                user, pageSize, lastStatus, new PagedNotificationHandler<>(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getFeedTask);
     }

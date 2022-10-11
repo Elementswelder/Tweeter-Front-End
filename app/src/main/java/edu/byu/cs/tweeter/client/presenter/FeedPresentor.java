@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.client.service.StatusService;
@@ -54,7 +55,30 @@ public class FeedPresentor {
         view.setLoadingFooter(true);
 
         followService.loadMoreItemsFeed(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastStatus, new GetFeedObserver());
+                user, PAGE_SIZE, lastStatus, new PagedObserver<>() {
+                    @Override
+                    public void handleSuccess(List<Status> items, boolean hasMorePages) {
+                        isLoading = false;
+                        view.setLoadingFooter(false);
+                        lastStatus = (items.size() > 0) ? items.get(items.size() - 1) : null;
+                        view.addFeeds(items);
+                        FeedPresentor.this.hasMorePages = hasMorePages;
+                    }
+
+                    @Override
+                    public void handleFailure(String message) {
+                        isLoading = false;
+                        view.displayMessage("Failed to get following: " + message);
+                        view.setLoadingFooter(false);
+                    }
+
+                    @Override
+                    public void handleException(Exception exception) {
+                        isLoading = false;
+                        view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+                        view.setLoadingFooter(false);
+                    }
+                });
     }
 
     public boolean isLoading() {
