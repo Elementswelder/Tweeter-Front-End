@@ -10,7 +10,7 @@ import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter {
+public class RegisterPresenter extends LoginsPresentorHandler {
 
     String imageToString;
 
@@ -28,8 +28,9 @@ public class RegisterPresenter {
     private final UserService userService;
 
     public RegisterPresenter(View view) {
-        this.view = view;
+        super((LoginsPresentorHandler.View) view);
         userService = new UserService();
+
     }
 
     public void initiateRegister(String firstName, String lastName, String username, String password) {
@@ -37,26 +38,7 @@ public class RegisterPresenter {
         if (message == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Registering");
-            userService.register(firstName,lastName,username,password,this.imageToString, new LoginsObserver() {
-                @Override
-                public void handleFailure(String message) {
-                    view.clearInfoMessage();
-                    view.displayErrorMessage(message);
-                }
-
-                @Override
-                public void handleException(Exception exception) {
-                    view.clearInfoMessage();
-                    view.displayErrorMessage(exception.getMessage());
-                }
-
-                @Override
-                public void handleSuccess(User user, AuthToken authToken) {
-                    view.displayInfoMessage("Welcome " + user.firstName);
-                    view.clearErrorMessage();
-                    view.navigateUser(user);
-                }
-            });
+            userService.register(firstName,lastName,username,password,this.imageToString, new MyLoginsObserver());
         }
         else {
             view.clearInfoMessage();
@@ -99,6 +81,27 @@ public class RegisterPresenter {
         else {
             view.clearInfoMessage();
             view.displayErrorMessage("Error with the image");
+        }
+    }
+
+    private class MyLoginsObserver implements LoginsObserver {
+        @Override
+        public void handleFailure(String message) {
+            view.clearInfoMessage();
+            view.displayErrorMessage(message);
+        }
+
+        @Override
+        public void handleException(Exception exception) {
+            view.clearInfoMessage();
+            view.displayErrorMessage(exception.getMessage());
+        }
+
+        @Override
+        public void handleSuccess(User user, AuthToken authToken) {
+            view.displayInfoMessage("Welcome " + user.firstName);
+            view.clearErrorMessage();
+            view.navigateUser(user);
         }
     }
 }

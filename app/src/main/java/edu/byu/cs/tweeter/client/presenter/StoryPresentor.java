@@ -35,26 +35,7 @@ public class StoryPresentor {
     }
 
     public void loadMoreFollowers(String username) {
-        followService.getUser(username, new GetSingleUserObserver() {
-            @Override
-            public void handleFailure(String message) {
-                isLoading = false;
-                view.displayMessage("Failed to get following: " + message);
-                view.setLoadingFooter(false);
-            }
-
-            @Override
-            public void handleException(Exception exception) {
-                isLoading = false;
-                view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
-                view.setLoadingFooter(false);
-            }
-
-            @Override
-            public void handleSuccess(User user) {
-                view.setIntent(user);
-            }
-        });
+        followService.getUser(username, new MyGetSingleUserObserver());
         view.displayMessage("Getting user's profile...Story");
     }
 
@@ -70,29 +51,52 @@ public class StoryPresentor {
         isLoading = true;
         view.setLoadingFooter(true);
         statusService.loadMoreStatus(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastStatus, new PagedObserver<Status>() {
-                    @Override
-                    public void handleSuccess(List<Status> items, boolean hasMorePages) {
-                        isLoading = false;
-                        view.setLoadingFooter(false);
-                        lastStatus = (items.size() > 0) ? items.get(items.size() - 1) : null;
-                        view.addStatus(items);
-                        StoryPresentor.this.hasMorePages = hasMorePages;
-                    }
+                user, PAGE_SIZE, lastStatus, new StatusPagedObserver());
+    }
 
-                    @Override
-                    public void handleFailure(String message) {
-                        isLoading = false;
-                        view.displayMessage("Failed to get following: " + message);
-                        view.setLoadingFooter(false);
-                    }
+    private class MyGetSingleUserObserver implements GetSingleUserObserver {
+        @Override
+        public void handleFailure(String message) {
+            isLoading = false;
+            view.displayMessage("Failed to get following: " + message);
+            view.setLoadingFooter(false);
+        }
 
-                    @Override
-                    public void handleException(Exception exception) {
-                        isLoading = false;
-                        view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
-                        view.setLoadingFooter(false);
-                    }
-                });
+        @Override
+        public void handleException(Exception exception) {
+            isLoading = false;
+            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+            view.setLoadingFooter(false);
+        }
+
+        @Override
+        public void handleSuccess(User user) {
+            view.setIntent(user);
+        }
+    }
+
+    private class StatusPagedObserver implements PagedObserver<Status> {
+        @Override
+        public void handleSuccess(List<Status> items, boolean hasMorePages) {
+            isLoading = false;
+            view.setLoadingFooter(false);
+            lastStatus = (items.size() > 0) ? items.get(items.size() - 1) : null;
+            view.addStatus(items);
+            StoryPresentor.this.hasMorePages = hasMorePages;
+        }
+
+        @Override
+        public void handleFailure(String message) {
+            isLoading = false;
+            view.displayMessage("Failed to get following: " + message);
+            view.setLoadingFooter(false);
+        }
+
+        @Override
+        public void handleException(Exception exception) {
+            isLoading = false;
+            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+            view.setLoadingFooter(false);
+        }
     }
 }

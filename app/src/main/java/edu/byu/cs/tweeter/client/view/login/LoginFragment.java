@@ -60,26 +60,7 @@ public class LoginFragment extends Fragment implements LoginPresenter.View {
             public void onClick(View view) {
                 String uname = alias.getText().toString();
                 String pword = password.getText().toString();
-
                 presenter.initiateLogin(uname, pword);
-/*                // Login and move to MainActivity.
-                try {
-                    validateLogin(); // This should go to the presenter
-                    errorView.setText(null); //Presentor calls view because the presetner decides when
-
-                    infoToast = Toast.makeText(getContext(), "Logging In...", Toast.LENGTH_LONG);
-                    infoToast.show(); //Presenter call view
-
-                    //This goes into the user service
-                    // Send the login request.
-                    LoginTask loginTask = new LoginTask(alias.getText().toString(),
-                            password.getText().toString(),
-                            new LoginHandler());
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    executor.execute(loginTask);
-                } catch (Exception e) {
-                    errorView.setText(e.getMessage());
-                }*/
             }
         });
 
@@ -105,13 +86,11 @@ public class LoginFragment extends Fragment implements LoginPresenter.View {
     @Override
     public void displayErrorMessage(String message) {
         errorView.setText(message);
-
     }
 
     @Override
     public void clearErrorMessage() {
         errorView.setText("");
-
     }
 
     @Override
@@ -122,49 +101,3 @@ public class LoginFragment extends Fragment implements LoginPresenter.View {
 
     }
 }
-
-/*    public void validateLogin() {
-        if (alias.getText().charAt(0) != '@') {
-            throw new IllegalArgumentException("Alias must begin with @.");
-        }
-        if (alias.getText().length() < 2) {
-            throw new IllegalArgumentException("Alias must contain 1 or more characters after the @.");
-        }
-        if (password.getText().length() == 0) {
-            throw new IllegalArgumentException("Password cannot be empty.");
-        }
-    }*/
-
-    /**
-     * Message handler (i.e., observer) for LoginTask
-     */
-    /*private class LoginHandler extends Handler {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LoginTask.SUCCESS_KEY);
-            if (success) {
-                User loggedInUser = (User) msg.getData().getSerializable(LoginTask.USER_KEY);
-                AuthToken authToken = (AuthToken) msg.getData().getSerializable(LoginTask.AUTH_TOKEN_KEY);
-
-                // Cache user session information
-                Cache.getInstance().setCurrUser(loggedInUser);
-                Cache.getInstance().setCurrUserAuthToken(authToken);
-
-                Intent intent = new Intent(getContext(), MainActivity.class);
-                intent.putExtra(MainActivity.CURRENT_USER_KEY, loggedInUser);
-
-                infoToast.cancel();
-
-                Toast.makeText(getContext(), "Hello " + Cache.getInstance().getCurrUser().getName(), Toast.LENGTH_LONG).show();
-                startActivity(intent);
-            } else if (msg.getData().containsKey(LoginTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LoginTask.MESSAGE_KEY);
-                Toast.makeText(getContext(), "Failed to login: " + message, Toast.LENGTH_LONG).show();
-            } else if (msg.getData().containsKey(LoginTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LoginTask.EXCEPTION_KEY);
-                Toast.makeText(getContext(), "Failed to login because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }*/
-
-
-

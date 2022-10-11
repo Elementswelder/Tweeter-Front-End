@@ -5,7 +5,7 @@ import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class LoginPresenter {
+public class LoginPresenter extends PresentorHandler {
 
 
     public interface View {
@@ -28,27 +28,7 @@ public class LoginPresenter {
         if (message == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Logging In");
-            new UserService().login(username, password, new LoginsObserver() {
-                @Override
-                public void handleSuccess(User user, AuthToken authToken) {
-                    view.displayInfoMessage("Hello " + user.firstName);
-                    view.clearErrorMessage();
-                    view.navigateUser(user);
-                }
-
-                @Override
-                public void handleFailure(String message) {
-                    view.clearInfoMessage();
-                    view.displayErrorMessage(message);
-
-                }
-
-                @Override
-                public void handleException(Exception exception) {
-                    view.clearInfoMessage();
-                    view.displayErrorMessage(exception.getMessage());
-                }
-            });
+            new UserService().login(username, password, new MyLoginsObserver());
         }
         else {
             view.clearInfoMessage();
@@ -67,5 +47,27 @@ public class LoginPresenter {
             return "Password cannot be empty.";
         }
         return null;
+    }
+
+    private class MyLoginsObserver implements LoginsObserver {
+        @Override
+        public void handleSuccess(User user, AuthToken authToken) {
+            view.displayInfoMessage("Hello " + user.firstName);
+            view.clearErrorMessage();
+            view.navigateUser(user);
+        }
+
+        @Override
+        public void handleFailure(String message) {
+            view.clearInfoMessage();
+            view.displayErrorMessage(message);
+
+        }
+
+        @Override
+        public void handleException(Exception exception) {
+            view.clearInfoMessage();
+            view.displayErrorMessage(exception.getMessage());
+        }
     }
 }
