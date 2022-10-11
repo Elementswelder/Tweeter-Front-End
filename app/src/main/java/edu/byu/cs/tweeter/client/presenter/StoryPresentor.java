@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.client.service.StatusService;
@@ -24,39 +25,6 @@ public class StoryPresentor {
         void setLoadingFooter(boolean value);
         void setIntent(User user);
         void addStatus(List<Status> followers);
-    }
-
-    private class GetStoryObserver implements StatusService.GetStoryObserver{
-
-        @Override
-        public void setIntent(User user) {
-            view.setIntent(user);
-        }
-
-        @Override
-        public void displayErrorMessage(String message) {
-            isLoading = false;
-            view.displayMessage("Failed to get following: " + message);
-            view.setLoadingFooter(false);
-
-        }
-
-        @Override
-        public void displayException(Exception ex) {
-            isLoading = false;
-            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
-            view.setLoadingFooter(false);
-
-        }
-
-        @Override
-        public void addStoryItems(List<Status> feeds, boolean hasMorePages) {
-            isLoading = false;
-            view.setLoadingFooter(false);
-            lastStatus = (feeds.size() > 0) ? feeds.get(feeds.size() - 1) : null;
-            view.addStatus(feeds);
-            StoryPresentor.this.hasMorePages = hasMorePages;
-        }
     }
 
     public StoryPresentor(View view){
@@ -101,7 +69,29 @@ public class StoryPresentor {
         isLoading = true;
         view.setLoadingFooter(true);
         statusService.loadMoreStatus(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastStatus, new GetStoryObserver());
-    }
+                user, PAGE_SIZE, lastStatus, new PagedObserver<Status>() {
+                    @Override
+                    public void handleSuccess(List<Status> items, boolean hasMorePages) {
+                        isLoading = false;
+                        view.setLoadingFooter(false);
+                        lastStatus = (items.size() > 0) ? items.get(items.size() - 1) : null;
+                        view.addStatus(items);
+                        StoryPresentor.this.hasMorePages = hasMorePages;
+                    }
 
+                    @Override
+                    public void handleFailure(String message) {
+                        isLoading = false;
+                        view.displayMessage("Failed to get following: " + message);
+                        view.setLoadingFooter(false);
+                    }
+
+                    @Override
+                    public void handleException(Exception exception) {
+                        isLoading = false;
+                        view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+                        view.setLoadingFooter(false);
+                    }
+                });
+    }
 }

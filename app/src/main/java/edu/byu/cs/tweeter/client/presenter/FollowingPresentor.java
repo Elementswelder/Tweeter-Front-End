@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -43,7 +44,7 @@ public class FollowingPresentor {
         isLoading = true;
         view.setLoadingFooter(true);
 
-        followService.loadMoreItems(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, lastFollowee, new FollowService.GetFollowingObserver() {
+        followService.loadMoreItems(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, lastFollowee, new PagedObserver<User>() {
             @Override
             public void handleSuccess(List<User> followees, boolean hasMorePages) {
                 isLoading = false;

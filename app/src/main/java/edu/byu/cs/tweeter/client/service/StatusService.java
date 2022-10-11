@@ -9,9 +9,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.backgroundTask.GetStoryTask;
-import edu.byu.cs.tweeter.client.backgroundTask.Handlers.GetStoryHandler;
+import edu.byu.cs.tweeter.client.backgroundTask.Handlers.PagedNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.Handlers.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.backgroundTask.PostStatusTask;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -35,9 +36,9 @@ public class StatusService {
         void addFeedItems(List<Status> feeds, boolean hasMorePages);
     }
 
-    public void loadMoreStatus(AuthToken currUserAuthToken, User user, int pageSize, Status lastStatus, GetStoryObserver getStoryObserver){
+    public void loadMoreStatus(AuthToken currUserAuthToken, User user, int pageSize, Status lastStatus, PagedObserver<Status> observer){
         GetStoryTask getStoryTask = new GetStoryTask(currUserAuthToken,
-                user, pageSize, lastStatus, new GetStoryHandler(getStoryObserver));
+                user, pageSize, lastStatus, new PagedNotificationHandler<>(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(getStoryTask);
     }

@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.LoginsObserver;
 import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -36,18 +37,24 @@ public class RegisterPresenter {
         if (message == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Registering");
-            userService.register(firstName,lastName,username,password,this.imageToString, new UserService.RegisterObserver() {
+            userService.register(firstName,lastName,username,password,this.imageToString, new LoginsObserver() {
                 @Override
-                public void registerSucceeded(User user, AuthToken authToken) {
-                    view.displayInfoMessage("Welcome " + user.firstName);
-                    view.clearErrorMessage();
-                    view.navigateUser(user);
+                public void handleFailure(String message) {
+                    view.clearInfoMessage();
+                    view.displayErrorMessage(message);
                 }
 
                 @Override
-                public void registerFailed(String message) {
+                public void handleException(Exception exception) {
                     view.clearInfoMessage();
-                    view.displayErrorMessage(message);
+                    view.displayErrorMessage(exception.getMessage());
+                }
+
+                @Override
+                public void handleSuccess(User user, AuthToken authToken) {
+                    view.displayInfoMessage("Welcome " + user.firstName);
+                    view.clearErrorMessage();
+                    view.navigateUser(user);
                 }
             });
         }

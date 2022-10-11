@@ -9,6 +9,8 @@ import java.util.concurrent.Executors;
 
 import edu.byu.cs.client.R;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.FollowCountObserver;
+import edu.byu.cs.tweeter.client.backgroundTask.observer.FollowerObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
@@ -43,20 +45,20 @@ public class MainPresentor {
     }
 
     public void setFollowingStatus(User selectedUser) {
-        followService.getFollowStatus(selectedUser, new FollowService.IsFollowerObserver() {
+        followService.getFollowStatus(selectedUser, new FollowerObserver() {
             @Override
-            public void displayException(Exception ex) {
-                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
-            }
-
-            @Override
-            public void setFollowingButton(boolean isFollowed) {
-                view.setFollowerButton(isFollowed);
-            }
-
-            @Override
-            public void displayErrorMessage(String message) {
+            public void handleFailure(String message) {
                 view.displayMessage("Failed to get following: " + message);
+            }
+
+            @Override
+            public void handleException(Exception exception) {
+                view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+            }
+
+            @Override
+            public void handleSuccess(boolean isFollower) {
+                view.setFollowerButton(isFollower);
             }
         });
 
@@ -82,25 +84,21 @@ public class MainPresentor {
                 @Override
                 public void handleSuccess() {
                     view.setFollowerButton(false);
-                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowService.GetCountFollowObserver() {
+                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowCountObserver() {
                         @Override
-                        public void setFollowerText(String text) {
-                            view.setFollowingText(text);
-                        }
-
-                        @Override
-                        public void setFollowingText(String text) {
-                            view.setFollowerText(text);
-                        }
-
-                        @Override
-                        public void displayErrorMessage(String message) {
+                        public void handleFailure(String message) {
                             view.displayMessage("Failed to get following: " + message);
                         }
 
                         @Override
-                        public void displayException(Exception ex) {
-                            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                        public void handleException(Exception exception) {
+                            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+                        }
+
+                        @Override
+                        public void handleSuccess(String followNum) {
+                            view.setFollowingText(followNum);
+                            view.setFollowerText(followNum);
                         }
                     });
                     setFollowingButton(false);
@@ -123,25 +121,21 @@ public class MainPresentor {
 
                 @Override
                 public void handleSuccess() {
-                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowService.GetCountFollowObserver() {
+                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowCountObserver() {
                         @Override
-                        public void setFollowerText(String text) {
-                            view.setFollowingText(text);
-                        }
-
-                        @Override
-                        public void setFollowingText(String text) {
-                            view.setFollowerText(text);
-                        }
-
-                        @Override
-                        public void displayErrorMessage(String message) {
+                        public void handleFailure(String message) {
                             view.displayMessage("Failed to get following: " + message);
                         }
 
                         @Override
-                        public void displayException(Exception ex) {
-                            view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+                        public void handleException(Exception exception) {
+                            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+                        }
+
+                        @Override
+                        public void handleSuccess(String followNum) {
+                            view.setFollowingText(followNum);
+                            view.setFollowerText(followNum);
                         }
                     });
                 }
@@ -156,25 +150,21 @@ public class MainPresentor {
     }
 
     public void updateSelectedUserFollowingAndFollowers(User user) {
-        followService.updateSelectedUserFollowingAndFollowers(user, new FollowService.GetCountFollowObserver() {
+        followService.updateSelectedUserFollowingAndFollowers(user, new FollowCountObserver() {
             @Override
-            public void setFollowerText(String text) {
-                view.setFollowingText(text);
-            }
-
-            @Override
-            public void setFollowingText(String text) {
-                view.setFollowerText(text);
-            }
-
-            @Override
-            public void displayErrorMessage(String message) {
+            public void handleFailure(String message) {
                 view.displayMessage("Failed to get following: " + message);
             }
 
             @Override
-            public void displayException(Exception ex) {
-                view.displayMessage("Failed to get following because of exception: " + ex.getMessage());
+            public void handleException(Exception exception) {
+                view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+            }
+
+            @Override
+            public void handleSuccess(String followNum) {
+                view.setFollowingText(followNum);
+                view.setFollowerText(followNum);
             }
         });
     }

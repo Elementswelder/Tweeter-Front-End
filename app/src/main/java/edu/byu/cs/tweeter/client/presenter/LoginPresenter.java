@@ -1,10 +1,11 @@
 package edu.byu.cs.tweeter.client.presenter;
 
+import edu.byu.cs.tweeter.client.backgroundTask.observer.LoginsObserver;
 import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class LoginPresenter implements UserService.LoginObserver {
+public class LoginPresenter {
 
 
     public interface View {
@@ -27,7 +28,27 @@ public class LoginPresenter implements UserService.LoginObserver {
         if (message == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Logging In");
-            new UserService().login(username, password, this);
+            new UserService().login(username, password, new LoginsObserver() {
+                @Override
+                public void handleSuccess(User user, AuthToken authToken) {
+                    view.displayInfoMessage("Hello " + user.firstName);
+                    view.clearErrorMessage();
+                    view.navigateUser(user);
+                }
+
+                @Override
+                public void handleFailure(String message) {
+                    view.clearInfoMessage();
+                    view.displayErrorMessage(message);
+
+                }
+
+                @Override
+                public void handleException(Exception exception) {
+                    view.clearInfoMessage();
+                    view.displayErrorMessage(exception.getMessage());
+                }
+            });
         }
         else {
             view.clearInfoMessage();
@@ -47,22 +68,4 @@ public class LoginPresenter implements UserService.LoginObserver {
         }
         return null;
     }
-
-    @Override
-    public void loginSucceeded(User user, AuthToken authToken) {
-        view.displayInfoMessage("Hello " + user.firstName);
-        view.clearErrorMessage();
-        view.navigateUser(user);
-
-    }
-
-    @Override
-    public void loginFailed(String message) {
-        view.clearInfoMessage();
-        view.displayErrorMessage(message);
-
-    }
-
-
-
 }
