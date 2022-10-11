@@ -6,26 +6,17 @@ import edu.byu.cs.tweeter.client.backgroundTask.observer.GetSingleUserObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
+import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class FollowerPresentor {
+public class FollowerPresenter extends PagedPresenter<User>{
 
-    private View view;
+    private PagedView<User> view;
     private FollowService followService;
-    private static final int PAGE_SIZE = 10;
-
-    private boolean isLoading = false;
     private User lastFollower;
-    private boolean hasMorePages;
 
-    public interface View {
-        void displayMessage(String message);
-        void setLoadingFooter(boolean value);
-        void setIntent(User user);
-        void addFollowers(List<User> followers);
-    }
-
-    public FollowerPresentor(View view){
+    public FollowerPresenter(PagedView<User> view){
+        super(view);
         this.view = view;
         followService = new FollowService();
     }
@@ -35,14 +26,6 @@ public class FollowerPresentor {
         view.displayMessage("Getting user's profile...Followers");
     }
 
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public boolean HasMorePages() {
-        return hasMorePages;
-    }
-
     public void getMoreFollowers(User user){
         isLoading = true;
         view.setLoadingFooter(true);
@@ -50,14 +33,20 @@ public class FollowerPresentor {
                 user, PAGE_SIZE, lastFollower, new UserPagedObserver());
     }
 
+    @Override
+    protected String getDescription() {
+        return null;
+    }
+
     private class UserPagedObserver implements PagedObserver<User> {
+
         @Override
         public void handleSuccess(List<User> items, boolean hasMorePages) {
             isLoading = false;
             view.setLoadingFooter(false);
             lastFollower = (items.size() > 0) ? items.get(items.size() - 1) : null;
-            view.addFollowers(items);
-            FollowerPresentor.this.hasMorePages = hasMorePages;
+            view.addItems(items);
+            FollowerPresenter.this.hasMorePages = hasMorePages;
         }
 
         @Override
@@ -76,6 +65,7 @@ public class FollowerPresentor {
     }
 
     private class MyGetSingleUserObserver implements GetSingleUserObserver {
+
         @Override
         public void handleFailure(String message) {
             isLoading = false;

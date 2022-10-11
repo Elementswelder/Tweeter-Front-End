@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.client.R;
+import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
 import edu.byu.cs.tweeter.client.presenter.StoryPresentor;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -39,7 +40,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the "Story" tab.
  */
-public class StoryFragment extends Fragment implements StoryPresentor.View {
+public class StoryFragment extends Fragment implements PagedPresenter.PagedView<Status> {
     private static final String LOG_TAG = "StoryFragment";
     private static final String USER_KEY = "UserKey";
 
@@ -104,17 +105,17 @@ public class StoryFragment extends Fragment implements StoryPresentor.View {
     }
 
     @Override
+    public void addItems(List<Status> items) {
+        storyRecyclerViewAdapter.addItems(items);
+    }
+
+    @Override
     public void setLoadingFooter(boolean value) {
         if (value){
             storyRecyclerViewAdapter.addLoadingFooter();
         } else {
             storyRecyclerViewAdapter.removeLoadingFooter();
         }
-    }
-
-    @Override
-    public void addStatus(List<Status> statuses) {
-        storyRecyclerViewAdapter.addItems(statuses);
     }
 
     /**
@@ -378,7 +379,7 @@ public class StoryFragment extends Fragment implements StoryPresentor.View {
             int totalItemCount = layoutManager.getItemCount();
             int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
 
-            if (!presentor.isLoading() && presentor.HasMorePages()) {
+            if (!presentor.isLoading() && presentor.hasMorePages()) {
                 if ((visibleItemCount + firstVisibleItemPosition) >=
                         totalItemCount && firstVisibleItemPosition >= 0) {
                     // Run this code later on the UI thread

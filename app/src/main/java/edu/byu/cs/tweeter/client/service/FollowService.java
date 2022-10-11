@@ -26,8 +26,8 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class FollowService extends ServiceHandler<Runnable>{
 
     public void loadMoreItems(AuthToken currUserAuthToken, User user, int pageSize, User lastFollowee, PagedObserver<User> observer) {
-        GetFollowingTask getFollowingTask = new GetFollowingTask(currUserAuthToken,
-                user, pageSize, lastFollowee, new PagedNotificationHandler<User>(observer));
+        GetFollowingTask getFollowingTask = new GetFollowingTask(currUserAuthToken, user,
+                pageSize, lastFollowee, new PagedNotificationHandler<>(observer));
         startTask(getFollowingTask);
     }
 

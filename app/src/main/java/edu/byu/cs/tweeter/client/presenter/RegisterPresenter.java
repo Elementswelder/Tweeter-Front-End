@@ -10,7 +10,7 @@ import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter extends LoginsPresentorHandler {
+public class RegisterPresenter  {
 
     String imageToString;
 
@@ -28,7 +28,7 @@ public class RegisterPresenter extends LoginsPresentorHandler {
     private final UserService userService;
 
     public RegisterPresenter(View view) {
-        super((LoginsPresentorHandler.View) view);
+        this.view = view;
         userService = new UserService();
 
     }

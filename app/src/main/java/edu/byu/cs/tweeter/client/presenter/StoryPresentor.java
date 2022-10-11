@@ -10,25 +10,14 @@ import edu.byu.cs.tweeter.client.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class StoryPresentor {
+public class StoryPresentor extends PagedPresenter<Status>{
 
-    private View view;
+    private PagedView<Status> view;
     private StatusService statusService;
     private FollowService followService;
-    private static final int PAGE_SIZE = 10;
 
-    private boolean isLoading = false;
-    private Status lastStatus;
-    private boolean hasMorePages;
-
-    public interface View {
-        void displayMessage(String message);
-        void setLoadingFooter(boolean value);
-        void setIntent(User user);
-        void addStatus(List<Status> followers);
-    }
-
-    public StoryPresentor(View view){
+    public StoryPresentor(PagedView<Status> view){
+        super(view);
         this.view = view;
         statusService = new StatusService();
         followService = new FollowService();
@@ -39,19 +28,16 @@ public class StoryPresentor {
         view.displayMessage("Getting user's profile...Story");
     }
 
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public boolean HasMorePages() {
-        return hasMorePages;
-    }
-
     public void getMoreStories(User user){
         isLoading = true;
         view.setLoadingFooter(true);
         statusService.loadMoreStatus(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastStatus, new StatusPagedObserver());
+                user, 10, lastItem, new StatusPagedObserver());
+    }
+
+    @Override
+    protected String getDescription() {
+        return null;
     }
 
     private class MyGetSingleUserObserver implements GetSingleUserObserver {
@@ -80,8 +66,8 @@ public class StoryPresentor {
         public void handleSuccess(List<Status> items, boolean hasMorePages) {
             isLoading = false;
             view.setLoadingFooter(false);
-            lastStatus = (items.size() > 0) ? items.get(items.size() - 1) : null;
-            view.addStatus(items);
+            lastItem = (items.size() > 0) ? items.get(items.size() - 1) : null;
+            view.addItems(items);
             StoryPresentor.this.hasMorePages = hasMorePages;
         }
 

@@ -6,31 +6,24 @@ import edu.byu.cs.tweeter.client.backgroundTask.observer.GetSingleUserObserver;
 import edu.byu.cs.tweeter.client.backgroundTask.observer.PagedObserver;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.FollowService;
-import edu.byu.cs.tweeter.client.service.StatusService;
+import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class FeedPresentor {
+public class FeedPresentor extends PagedPresenter<Status> {
 
-    private View view;
+    private PagedView<Status> view;
     private FollowService followService;
 
-    private boolean hasMorePages;
-    private static final int PAGE_SIZE = 10;
-    private Status lastStatus;
-    private boolean isLoading = false;
-
-    public FeedPresentor(View view){
+    public FeedPresentor(PagedPresenter.PagedView<Status> view){
+        super(view);
         this.view = view;
         followService = new FollowService();
     }
 
-
-    public interface View {
-        void displayMessage(String string);
-        void setIntent(User user);
-        void setLoadingFooter(boolean bool);
-        void addFeeds(List<Status> statuses);
+    @Override
+    protected String getDescription() {
+        return null;
     }
 
     public void loadMoreFeedUser(String username) {
@@ -41,17 +34,8 @@ public class FeedPresentor {
     public void loadMoreFeed(User user) {
         isLoading = true;
         view.setLoadingFooter(true);
-
         followService.loadMoreItemsFeed(Cache.getInstance().getCurrUserAuthToken(),
-                user, PAGE_SIZE, lastStatus, new StatusPagedObserver());
-    }
-
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public boolean hasMorePages() {
-        return hasMorePages;
+                user, PAGE_SIZE, lastItem, new StatusPagedObserver());
     }
 
     private class StatusPagedObserver implements PagedObserver<Status> {
@@ -59,8 +43,8 @@ public class FeedPresentor {
         public void handleSuccess(List<Status> items, boolean hasMorePages) {
             isLoading = false;
             view.setLoadingFooter(false);
-            lastStatus = (items.size() > 0) ? items.get(items.size() - 1) : null;
-            view.addFeeds(items);
+            lastItem = (items.size() > 0) ? items.get(items.size() - 1) : null;
+            view.addItems(items);
             FeedPresentor.this.hasMorePages = hasMorePages;
         }
 

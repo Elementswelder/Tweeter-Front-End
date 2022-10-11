@@ -25,14 +25,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.client.R;
-import edu.byu.cs.tweeter.client.presenter.FollowerPresentor;
+import edu.byu.cs.tweeter.client.presenter.FollowerPresenter;
+import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
  * Implements the "Followers" tab.
  */
-public class FollowersFragment extends Fragment implements FollowerPresentor.View {
+public class FollowersFragment extends Fragment implements PagedPresenter.PagedView<User> {
 
     private static final String LOG_TAG = "FollowersFragment";
     private static final String USER_KEY = "UserKey";
@@ -41,7 +42,7 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
     private static final int ITEM_VIEW = 1;
 
     private User user;
-    private FollowerPresentor followerPresentor = new FollowerPresentor(this);
+    private FollowerPresenter followerPresentor = new FollowerPresenter(this);
     private FollowersRecyclerViewAdapter followersRecyclerViewAdapter = new FollowersRecyclerViewAdapter();
 
 
@@ -85,11 +86,6 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
     }
 
     @Override
-    public void displayMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
     public void setLoadingFooter(boolean value) {
         if (value){
             followersRecyclerViewAdapter.addLoadingFooter();
@@ -107,8 +103,13 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
     }
 
     @Override
-    public void addFollowers(List<User> followers) {
-        followersRecyclerViewAdapter.addItems(followers);
+    public void addItems(List<User> items) {
+        followersRecyclerViewAdapter.addItems(items);
+    }
+
+    @Override
+    public void displayMessage(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -328,7 +329,7 @@ public class FollowersFragment extends Fragment implements FollowerPresentor.Vie
             int totalItemCount = layoutManager.getItemCount();
             int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
 
-            if (!followerPresentor.isLoading() && followerPresentor.HasMorePages()){
+            if (!followerPresentor.isLoading() && followerPresentor.hasMorePages()){
                 if ((visibleItemCount + firstVisibleItemPosition) >=
                         totalItemCount && firstVisibleItemPosition >= 0) {
                     // Run this code later on the UI thread
