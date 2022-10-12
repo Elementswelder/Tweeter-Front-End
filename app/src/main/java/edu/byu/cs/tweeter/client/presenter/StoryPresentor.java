@@ -35,11 +35,6 @@ public class StoryPresentor extends PagedPresenter<Status>{
                 user, 10, lastItem, new StatusPagedObserver());
     }
 
-    @Override
-    protected String getDescription() {
-        return null;
-    }
-
     private class MyGetSingleUserObserver implements GetSingleUserObserver {
         @Override
         public void handleFailure(String message) {

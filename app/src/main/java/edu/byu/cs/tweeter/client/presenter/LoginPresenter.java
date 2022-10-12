@@ -14,7 +14,6 @@ public class LoginPresenter extends PresentorHandler {
         void displayErrorMessage(String message);
         void clearErrorMessage();
         void navigateUser(User user);
-
     }
 
     private View view;

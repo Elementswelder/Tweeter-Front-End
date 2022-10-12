@@ -1,4 +1,5 @@
 package edu.byu.cs.tweeter.client.service;
+
 import edu.byu.cs.tweeter.client.backgroundTask.FollowTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFeedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
@@ -48,7 +49,6 @@ public class FollowService extends ServiceHandler<Runnable>{
                 username, new GetSingleUserHandler(observer));
         startTask(getUserTask);
     }
-
 
     public void getFollowStatus(User user, FollowerObserver observer){
         IsFollowerTask isFollowerTask = new IsFollowerTask(Cache.getInstance().getCurrUserAuthToken(),

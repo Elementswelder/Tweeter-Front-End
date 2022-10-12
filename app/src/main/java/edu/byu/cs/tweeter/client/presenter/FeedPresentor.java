@@ -21,10 +21,6 @@ public class FeedPresentor extends PagedPresenter<Status> {
         followService = new FollowService();
     }
 
-    @Override
-    protected String getDescription() {
-        return null;
-    }
 
     public void loadMoreFeedUser(String username) {
         followService.getUser(username, new MyGetSingleUserObserver());
@@ -38,49 +34,4 @@ public class FeedPresentor extends PagedPresenter<Status> {
                 user, PAGE_SIZE, lastItem, new StatusPagedObserver());
     }
 
-    private class StatusPagedObserver implements PagedObserver<Status> {
-        @Override
-        public void handleSuccess(List<Status> items, boolean hasMorePages) {
-            isLoading = false;
-            view.setLoadingFooter(false);
-            lastItem = (items.size() > 0) ? items.get(items.size() - 1) : null;
-            view.addItems(items);
-            FeedPresentor.this.hasMorePages = hasMorePages;
-        }
-
-        @Override
-        public void handleFailure(String message) {
-            isLoading = false;
-            view.displayMessage("Failed to get following: " + message);
-            view.setLoadingFooter(false);
-        }
-
-        @Override
-        public void handleException(Exception exception) {
-            isLoading = false;
-            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
-            view.setLoadingFooter(false);
-        }
-    }
-
-    private class MyGetSingleUserObserver implements GetSingleUserObserver {
-        @Override
-        public void handleFailure(String message) {
-            isLoading = false;
-            view.displayMessage("Failed to get following: " + message);
-            view.setLoadingFooter(false);
-        }
-
-        @Override
-        public void handleException(Exception exception) {
-            isLoading = false;
-            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
-            view.setLoadingFooter(false);
-        }
-
-        @Override
-        public void handleSuccess(User user) {
-            view.setIntent(user);
-        }
-    }
 }
