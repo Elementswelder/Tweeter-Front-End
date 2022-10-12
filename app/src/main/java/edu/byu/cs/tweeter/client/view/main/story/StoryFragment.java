@@ -146,7 +146,7 @@ public class StoryFragment extends Fragment implements PagedPresenter.PagedView<
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    presentor.loadMoreFollowers(userAlias.getText().toString());
+                    presentor.loadMoreItemsPaged(userAlias.getText().toString());
                 }
             });
         }
@@ -176,7 +176,7 @@ public class StoryFragment extends Fragment implements PagedPresenter.PagedView<
                         int end = s.getSpanEnd(this);
 
                         String clickable = s.subSequence(start, end).toString();
-                        presentor.loadMoreFollowers(clickable);
+                        presentor.loadMoreItemsPaged(clickable);
                     }
 
                     @Override
@@ -319,7 +319,7 @@ public class StoryFragment extends Fragment implements PagedPresenter.PagedView<
          */
         void loadMoreItems() {
             if (!presentor.isLoading()) {   // This guard is important for avoiding a race condition in the scrolling code.
-                presentor.getMoreStories(user);
+                presentor.getMoreItemsPaged(user);
             }
         }
 

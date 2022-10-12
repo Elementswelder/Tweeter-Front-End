@@ -136,7 +136,7 @@ public class FollowersFragment extends Fragment implements PagedPresenter.PagedV
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    followerPresentor.loadMoreFollowers(userAlias.getText().toString());
+                    followerPresentor.loadMoreItemsPaged(userAlias.getText().toString());
                 }
             });
         }
@@ -273,7 +273,7 @@ public class FollowersFragment extends Fragment implements PagedPresenter.PagedV
          */
         void loadMoreItems() {
             if (!followerPresentor.isLoading()) {   // This guard is important for avoiding a race condition in the scrolling code.
-                followerPresentor.getMoreFollowers(user);
+                followerPresentor.getMoreItemsPaged(user);
             }
         }
 

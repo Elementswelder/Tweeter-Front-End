@@ -146,7 +146,7 @@ public class FeedFragment extends Fragment implements PagedPresenter.PagedView<S
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    presentor.loadMoreFeedUser(userAlias.getText().toString());
+                    presentor.loadMoreItemsPaged(userAlias.getText().toString());
                 }
             });
         }
@@ -176,7 +176,7 @@ public class FeedFragment extends Fragment implements PagedPresenter.PagedView<S
                         int end = s.getSpanEnd(this);
 
                         String clickable = s.subSequence(start, end).toString();
-                        presentor.loadMoreFeedUser(clickable);
+                        presentor.loadMoreItemsPaged(clickable);
                     }
 
                     @Override
@@ -314,7 +314,7 @@ public class FeedFragment extends Fragment implements PagedPresenter.PagedView<S
          */
         void loadMoreItems(){
             if (!presentor.isLoading()) {   // This guard is important for avoiding a race condition in the scrolling code.
-                presentor.loadMoreFeed(user);
+                presentor.getMoreItemsPaged(user);
             }
         }
 
