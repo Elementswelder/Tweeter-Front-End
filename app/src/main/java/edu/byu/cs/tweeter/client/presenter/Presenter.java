@@ -18,11 +18,24 @@ public abstract class Presenter<T extends Presenter.View> {
         this.view = view;
         this.userService = new UserService();
         this.followService = new FollowService();
-        this.statusService = new StatusService();
+        this.statusService = getStatusService();
     }
+
+    public StatusService getStatusService(){
+        if (this.statusService == null){
+            return new StatusService();
+        } else {
+            return this.statusService;
+        }
+    }
+
 
     public interface View {
         void displayMessage(String message);
+    }
+
+    protected StatusService createGetStatusService(){
+        return new StatusService();
     }
 
 }
