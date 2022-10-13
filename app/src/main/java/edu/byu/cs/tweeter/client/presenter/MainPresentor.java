@@ -67,23 +67,7 @@ public class MainPresentor {
 
                 @Override
                 public void handleSuccess() {
-                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new FollowCountObserver() {
-                        @Override
-                        public void handleFailure(String message) {
-                            view.displayMessage("Failed to get following: " + message);
-                        }
-
-                        @Override
-                        public void handleException(Exception exception) {
-                            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
-                        }
-
-                        @Override
-                        public void handleSuccess(String followNum) {
-                            view.setFollowingText(followNum);
-                            view.setFollowerText(followNum);
-                        }
-                    });
+                    followService.updateSelectedUserFollowingAndFollowers(selectedUser, new MyFollowCountObserver());
                 }
             });
             setFollowingButton(true);
@@ -96,23 +80,7 @@ public class MainPresentor {
     }
 
     public void updateSelectedUserFollowingAndFollowers(User user) {
-        followService.updateSelectedUserFollowingAndFollowers(user, new FollowCountObserver() {
-            @Override
-            public void handleFailure(String message) {
-                view.displayMessage("Failed to get following: " + message);
-            }
-
-            @Override
-            public void handleException(Exception exception) {
-                view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
-            }
-
-            @Override
-            public void handleSuccess(String followNum) {
-                view.setFollowingText(followNum);
-                view.setFollowerText(followNum);
-            }
-        });
+        followService.updateSelectedUserFollowingAndFollowers(user, new MyFollowCountObserver());
     }
 
     public void createNewStatus(String post) {
@@ -301,6 +269,24 @@ public class MainPresentor {
                 }
             });
             setFollowingButton(false);
+        }
+    }
+
+    private class MyFollowCountObserver implements FollowCountObserver {
+        @Override
+        public void handleFailure(String message) {
+            view.displayMessage("Failed to get following: " + message);
+        }
+
+        @Override
+        public void handleException(Exception exception) {
+            view.displayMessage("Failed to get following because of exception: " + exception.getMessage());
+        }
+
+        @Override
+        public void handleSuccess(String followNum) {
+            view.setFollowingText(followNum);
+            view.setFollowerText(followNum);
         }
     }
 }

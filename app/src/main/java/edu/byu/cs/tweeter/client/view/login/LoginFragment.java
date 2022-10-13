@@ -14,13 +14,14 @@ import androidx.fragment.app.Fragment;
 
 import edu.byu.cs.client.R;
 import edu.byu.cs.tweeter.client.presenter.LoginPresenter;
+import edu.byu.cs.tweeter.client.presenter.LoginsPresenter;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
  * Implements the login screen.
  */
-public class LoginFragment extends Fragment implements LoginPresenter.View {
+public class LoginFragment extends Fragment implements LoginsPresenter.LoginsView {
     private static final String LOG_TAG = "LoginFragment";
 
     private Toast infoToast;
@@ -69,14 +70,7 @@ public class LoginFragment extends Fragment implements LoginPresenter.View {
     }
 
     @Override
-    public void displayInfoMessage(String message) {
-        clearInfoMessage();
-        infoToast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
-        infoToast.show();
-    }
-
-    @Override
-    public void clearInfoMessage() {
+    public void clearMessage() {
         if (infoToast != null) {
             infoToast.cancel();
             infoToast = null;
@@ -84,20 +78,23 @@ public class LoginFragment extends Fragment implements LoginPresenter.View {
     }
 
     @Override
-    public void displayErrorMessage(String message) {
-        errorView.setText(message);
-    }
-
-    @Override
-    public void clearErrorMessage() {
-        errorView.setText("");
-    }
-
-    @Override
-    public void navigateUser(User user) {
+    public void setIntent(User user) {
         Intent intent = new Intent(getContext(), MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
 
+    }
+
+    @Override
+    public void displayErrorMessage(String message) {
+        errorView.setText(message);
+    }
+
+
+    @Override
+    public void displayMessage(String message) {
+        clearMessage();
+        infoToast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
+        infoToast.show();
     }
 }

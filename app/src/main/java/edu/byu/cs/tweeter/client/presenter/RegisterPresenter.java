@@ -10,38 +10,22 @@ import edu.byu.cs.tweeter.client.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter  {
+public class RegisterPresenter extends LoginsPresenter {
 
     String imageToString;
 
-
-    public interface View {
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-        void navigateUser(User user);
-
-    }
-
-    private View view;
-    private final UserService userService;
-
-    public RegisterPresenter(View view) {
-        this.view = view;
-        userService = new UserService();
-
+    public RegisterPresenter(LoginsPresenter.LoginsView view) {
+        super(view);
     }
 
     public void initiateRegister(String firstName, String lastName, String username, String password) {
         String message = validateRegister(firstName, lastName, username, password); // This should go to the presenter
+        view.clearMessage();
         if (message == null) {
-            view.clearErrorMessage();
-            view.displayInfoMessage("Registering");
-            userService.register(firstName,lastName,username,password,this.imageToString, new MyLoginsObserver());
+            view.displayMessage("Registering");
+            userService.register(firstName,lastName,username,password,this.imageToString, new LoginRegisterObserver());
         }
         else {
-            view.clearInfoMessage();
             view.displayErrorMessage(message);
         }
     }
@@ -79,29 +63,8 @@ public class RegisterPresenter  {
             this.imageToString = Base64.getEncoder().encodeToString(imageBytes);
         }
         else {
-            view.clearInfoMessage();
+            view.clearMessage();
             view.displayErrorMessage("Error with the image");
-        }
-    }
-
-    private class MyLoginsObserver implements LoginsObserver {
-        @Override
-        public void handleFailure(String message) {
-            view.clearInfoMessage();
-            view.displayErrorMessage(message);
-        }
-
-        @Override
-        public void handleException(Exception exception) {
-            view.clearInfoMessage();
-            view.displayErrorMessage(exception.getMessage());
-        }
-
-        @Override
-        public void handleSuccess(User user, AuthToken authToken) {
-            view.displayInfoMessage("Welcome " + user.firstName);
-            view.clearErrorMessage();
-            view.navigateUser(user);
         }
     }
 }

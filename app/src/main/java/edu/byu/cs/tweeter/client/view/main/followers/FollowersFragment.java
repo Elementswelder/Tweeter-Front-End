@@ -112,6 +112,7 @@ public class FollowersFragment extends Fragment implements PagedPresenter.PagedV
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
+
     /**
      * The ViewHolder for the RecyclerView that displays the follower data.
      */

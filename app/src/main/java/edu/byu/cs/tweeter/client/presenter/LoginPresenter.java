@@ -1,36 +1,21 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import edu.byu.cs.tweeter.client.backgroundTask.observer.LoginsObserver;
-import edu.byu.cs.tweeter.client.service.UserService;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
-
-public class LoginPresenter extends PresentorHandler {
+public class LoginPresenter extends LoginsPresenter {
 
 
-    public interface View {
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-        void navigateUser(User user);
-    }
-
-    private View view;
-
-    public LoginPresenter(LoginPresenter.View view) {
-        this.view = view;
+    public LoginPresenter(LoginsPresenter.LoginsView view) {
+        super(view);
     }
 
     public void initiateLogin(String username, String password) {
         String message = validateLogin(username, password); // This should go to the presenter
         if (message == null) {
-            view.clearErrorMessage();
-            view.displayInfoMessage("Logging In");
-            new UserService().login(username, password, new MyLoginsObserver());
+            view.clearMessage();
+            view.displayMessage("Logging In");
+            userService.login(username, password, new LoginRegisterObserver());
         }
         else {
-            view.clearInfoMessage();
+            view.clearMessage();
             view.displayErrorMessage(message);
         }
     }
@@ -46,27 +31,5 @@ public class LoginPresenter extends PresentorHandler {
             return "Password cannot be empty.";
         }
         return null;
-    }
-
-    private class MyLoginsObserver implements LoginsObserver {
-        @Override
-        public void handleSuccess(User user, AuthToken authToken) {
-            view.displayInfoMessage("Hello " + user.firstName);
-            view.clearErrorMessage();
-            view.navigateUser(user);
-        }
-
-        @Override
-        public void handleFailure(String message) {
-            view.clearInfoMessage();
-            view.displayErrorMessage(message);
-
-        }
-
-        @Override
-        public void handleException(Exception exception) {
-            view.clearInfoMessage();
-            view.displayErrorMessage(exception.getMessage());
-        }
     }
 }
