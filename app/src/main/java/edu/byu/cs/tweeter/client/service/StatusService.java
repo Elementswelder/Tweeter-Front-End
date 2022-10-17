@@ -32,7 +32,6 @@ public class StatusService extends ServiceHandler<Runnable>{
         startTask(statusTask);
     }
 
-
     public String getFormattedDateTime() {
         try {
             SimpleDateFormat userFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

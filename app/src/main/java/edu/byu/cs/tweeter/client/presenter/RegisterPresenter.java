@@ -20,13 +20,8 @@ public class RegisterPresenter extends LoginsPresenter {
 
     public void initiateRegister(String firstName, String lastName, String username, String password) {
         String message = validateRegister(firstName, lastName, username, password); // This should go to the presenter
-        view.clearMessage();
-        if (message == null) {
-            view.displayMessage("Registering");
+        if (clearAndDisplayLogin(message, "Registering")){
             userService.register(firstName,lastName,username,password,this.imageToString, new LoginRegisterObserver());
-        }
-        else {
-            view.displayErrorMessage(message);
         }
     }
 

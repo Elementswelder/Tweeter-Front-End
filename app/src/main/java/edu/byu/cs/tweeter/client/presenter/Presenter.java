@@ -22,11 +22,13 @@ public abstract class Presenter<T extends Presenter.View> {
     }
 
     public StatusService getStatusService(){
+        return new StatusService();
+        /*
         if (this.statusService == null){
             return new StatusService();
         } else {
             return this.statusService;
-        }
+        } */
     }
 
 

@@ -68,7 +68,7 @@ public class MainPresenter extends Presenter  {
     }
 
     public void createNewStatus(String post) {
-        statusService.createNewPost(post, new SimpleNotifyObserver() {
+        getStatusService().createNewPost(post, new SimpleNotifyObserver() {
             @Override
             public void handleSuccess() {
                 view.displayMessage("Successfully Posted!");

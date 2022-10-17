@@ -7,25 +7,19 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import edu.byu.cs.tweeter.client.backgroundTask.observer.SimpleNotifyObserver;
-import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.service.StatusService;
 
-public class MainPresentroUnitTest {
+public class MainPresenterUnitTest {
 
     private MainPresenter.MainView mockView;
-    private Cache mockCache;
     private StatusService mockStatusService;
-
     private MainPresenter mainPresenterSpy;
 
     @BeforeEach
     public void setup() {
+
         mockView = Mockito.mock(MainPresenter.MainView.class);
-        mockCache = Mockito.mock(Cache.class);
         mockStatusService = Mockito.mock(StatusService.class);
-
-        Cache.setInstance(mockCache);
-
         mainPresenterSpy = Mockito.spy(new MainPresenter(mockView));
         Mockito.when(mainPresenterSpy.getStatusService()).thenReturn(mockStatusService);
     }
@@ -35,17 +29,15 @@ public class MainPresentroUnitTest {
         Answer<Void> answer = new Answer<>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                SimpleNotifyObserver observer = invocation.getArgument(0, SimpleNotifyObserver.class);
-                observer.handleSuccess();
+                    SimpleNotifyObserver observer = invocation.getArgument(1, SimpleNotifyObserver.class);
+                    observer.handleSuccess();
                 return null;
             }
         };
 
-        mainPresenterSpy.createNewStatus(Mockito.anyString());
         Mockito.doAnswer(answer).when(mockStatusService).createNewPost(Mockito.anyString(), Mockito.any());
-       // Mockito.doAnswer(answer).when(mainPresentorSpy).createNewStatus(Mockito.anyString());
+        mainPresenterSpy.createNewStatus(Mockito.anyString());
         Mockito.verify(mockView).displayMessage("Successfully Posted!");
-
     }
 
     @Test
@@ -53,7 +45,7 @@ public class MainPresentroUnitTest {
         Answer<Void> answer = new Answer<>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                SimpleNotifyObserver observer = invocation.getArgument(0, SimpleNotifyObserver.class);
+                SimpleNotifyObserver observer = invocation.getArgument(1, SimpleNotifyObserver.class);
                 observer.handleFailure("Something bad happened");
                 return null;
             }
@@ -70,7 +62,7 @@ public class MainPresentroUnitTest {
         Answer<Void> answer = new Answer<>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                SimpleNotifyObserver observer = invocation.getArgument(0, SimpleNotifyObserver.class);
+                SimpleNotifyObserver observer = invocation.getArgument(1, SimpleNotifyObserver.class);
                 observer.handleException(new Exception("New Exception"));
                 return null;
             }
@@ -78,6 +70,6 @@ public class MainPresentroUnitTest {
 
         Mockito.doAnswer(answer).when(mockStatusService).createNewPost(Mockito.anyString(), Mockito.any());
         mainPresenterSpy.createNewStatus(Mockito.anyString());
-        Mockito.verify(mockView).displayMessage("New Exception");
+        Mockito.verify(mockView).displayMessage("java.lang.Exception: New Exception");
     }
 }

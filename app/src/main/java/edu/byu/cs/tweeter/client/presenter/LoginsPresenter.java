@@ -22,6 +22,18 @@ public class LoginsPresenter extends Presenter{
         void displayErrorMessage(String message);
     }
 
+    protected boolean clearAndDisplayLogin(String message, String whichLogin){
+        if (message == null) {
+            view.displayMessage(whichLogin);
+            return true;
+        }
+        else {
+            view.clearMessage();
+            view.displayErrorMessage(message);
+            return false;
+        }
+    }
+
 
     protected class LoginRegisterObserver implements LoginsObserver {
 

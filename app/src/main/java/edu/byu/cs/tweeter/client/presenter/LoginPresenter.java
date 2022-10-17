@@ -9,14 +9,8 @@ public class LoginPresenter extends LoginsPresenter {
 
     public void initiateLogin(String username, String password) {
         String message = validateLogin(username, password); // This should go to the presenter
-        if (message == null) {
-            view.clearMessage();
-            view.displayMessage("Logging In");
+        if (clearAndDisplayLogin(message, "Logging in")) {
             userService.login(username, password, new LoginRegisterObserver());
-        }
-        else {
-            view.clearMessage();
-            view.displayErrorMessage(message);
         }
     }
 
